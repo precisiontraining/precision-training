@@ -1,0 +1,245 @@
+.page { min-height: 100vh; background: var(--bg); }
+
+/* LOCK */
+.lockPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(ellipse at center, #111 0%, #0a0a0a 70%);
+}
+
+.lockCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  animation: fadeUp 0.5s ease;
+}
+
+.lockIcon { font-size: 40px; margin-bottom: 20px; }
+
+.lockCard h1 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.lockCard p {
+  color: var(--gray);
+  font-size: 14px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.lockInput {
+  width: 100%;
+  background: var(--card-bg2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 14px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: var(--font);
+  text-align: center;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.lockInput:focus { border-color: var(--gold); }
+
+.lockError {
+  color: #f87171;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.lockBtn {
+  width: 100%;
+  padding: 16px;
+  background: var(--gold);
+  color: #000;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 15px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.lockBtn:hover { background: var(--gold-light); }
+.lockBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.lockBack {
+  font-size: 13px;
+  color: var(--gray);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.lockBack:hover { color: var(--gold); }
+
+/* PLAN PAGE */
+.header {
+  padding: 24px 40px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.gold { color: var(--gold); }
+
+.planTitle {
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.statsBar {
+  display: flex;
+  gap: 32px;
+  padding: 12px 40px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.statItem { display: flex; flex-direction: column; gap: 2px; }
+
+.statLabel {
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.statValue {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+}
+
+.tab {
+  padding: 16px 24px;
+  background: none;
+  color: var(--gray);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--white); }
+
+.tabActive {
+  color: var(--white);
+  border-bottom-color: var(--gold);
+}
+
+/* CONTENT */
+.content {
+  padding: 32px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* PLAN HTML rendering */
+.planHtml { 
+  color: var(--white); 
+  line-height: 1.7;
+}
+
+.planHtml h1, .planHtml h2 {
+  color: var(--gold);
+  font-weight: 800;
+  margin: 24px 0 12px;
+  font-size: clamp(18px, 2.5vw, 26px);
+}
+
+.planHtml h3 {
+  color: var(--gold);
+  font-weight: 800;
+  margin: 20px 0 10px;
+  font-size: clamp(16px, 2vw, 20px);
+}
+
+.planHtml h4 {
+  color: var(--gold);
+  font-weight: 700;
+  margin: 16px 0 8px;
+  font-size: 16px;
+}
+
+.planHtml p { margin-bottom: 12px; color: var(--gray-light); }
+
+.planHtml table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+  overflow-x: auto;
+  display: block;
+}
+
+.planHtml th {
+  background: rgba(200, 169, 110, 0.1);
+  color: var(--gold);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.planHtml td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--gray-light);
+  vertical-align: middle;
+}
+
+.planHtml tr:hover td { background: rgba(255,255,255,0.02); }
+
+.planHtml ul, .planHtml ol {
+  padding-left: 20px;
+  margin-bottom: 12px;
+  color: var(--gray-light);
+}
+
+.planHtml li { margin-bottom: 6px; }
+
+.planHtml strong { color: var(--white); font-weight: 700; }
+
+.planContent { }
+
+@media (max-width: 768px) {
+  .header { padding: 16px 16px 0; }
+  .statsBar { padding: 10px 16px; }
+  .tabs { padding: 0 16px; overflow-x: auto; }
+  .tab { padding: 14px 16px; font-size: 13px; white-space: nowrap; }
+  .content { padding: 20px 16px; }
+  .lockCard { padding: 32px 24px; }
+}
