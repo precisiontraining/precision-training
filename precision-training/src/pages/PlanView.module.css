@@ -125,11 +125,11 @@
 
 .exerciseCard {
   display: flex; align-items: center; gap: 20px; padding: 20px 28px;
-  border-bottom: 1px solid #0f0f0f; transition: background .15s;
+  border-bottom: 1px solid #111; transition: background .15s;
   position: relative;
 }
 .exerciseCard:last-child { border-bottom: none; }
-.exerciseCard:hover { background: rgba(255,255,255,0.015); }
+.exerciseCard:hover { background: rgba(255,255,255,0.02); }
 
 .exerciseNum {
   font-size: 11px; font-weight: 900; color: #2a2a2a; letter-spacing: 0.05em;
@@ -137,19 +137,19 @@
 }
 
 .exerciseImg {
-  width: 72px; height: 72px; flex-shrink: 0; border-radius: 12px;
-  background: #0d0d0d; border: 1px solid #1a1a1a; overflow: hidden;
+  width: 80px; height: 80px; flex-shrink: 0; border-radius: 10px;
+  background: #ffffff; border: 1px solid #2a2a2a; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 
 .exImg {
-  width: 100%; height: 100%; object-fit: contain; padding: 6px;
-  filter: brightness(0.9);
+  width: 100%; height: 100%; object-fit: contain; padding: 5px;
 }
 
 .exImgPlaceholder {
   width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-  color: #222;
+  background: #111; color: #2a2a2a;
 }
 
 .exerciseInfo { flex: 1; display: flex; flex-direction: column; gap: 6px; }
