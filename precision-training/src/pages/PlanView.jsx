@@ -404,8 +404,30 @@ function PlanContent({ plan, images, isNutrition, onSwap, onAdd, onRemove }) {
   }
 
   function getImageForExercise(name) {
-    const lower = name.toLowerCase()
-    return images[lower] || Object.entries(images).find(([k]) => k.includes(lower) || lower.includes(k))?.[1] || null
+    if (!name) return null
+    const lower = name.toLowerCase().trim()
+    // Normalize: remove trailing s, convert - to space
+    const normalized = lower.replace(/s$/, '').replace(/-/g, ' ').replace(/\s+/g, ' ')
+    
+    // 1. Exact match
+    if (images[lower]) return images[lower]
+    // 2. Normalized match
+    if (images[normalized]) return images[normalized]
+    // 3. Partial match - key includes search term or vice versa
+    const entries = Object.entries(images)
+    const partial = entries.find(([k]) => {
+      const kn = k.replace(/s$/, '').replace(/-/g, ' ')
+      return kn === normalized || k.includes(normalized) || normalized.includes(kn) ||
+             lower.includes(k) || k.includes(lower)
+    })
+    if (partial) return partial[1]
+    // 4. Word-based match - check if first significant word matches
+    const firstWord = normalized.split(' ')[0]
+    if (firstWord.length > 4) {
+      const wordMatch = entries.find(([k]) => k.includes(firstWord))
+      if (wordMatch) return wordMatch[1]
+    }
+    return null
   }
 
   return (
@@ -429,8 +451,31 @@ function EnhancedPlanRenderer({ html, isNutrition, images, onSwap, onAdd, onRemo
   useEffect(() => {
     if (!containerRef.current || !html) return
     containerRef.current.innerHTML = html
+    stripInlineStyles()
     enhanceContent()
   }, [html, images])
+
+  function stripInlineStyles() {
+    const container = containerRef.current
+    if (!container) return
+    // Unwrap body tag if AI wrapped content in full HTML doc
+    const bodyEl = container.querySelector('body')
+    if (bodyEl) { container.innerHTML = bodyEl.innerHTML }
+    // Remove all inline bg/color styles injected by AI
+    container.querySelectorAll('[style]').forEach(el => {
+      el.style.removeProperty('background')
+      el.style.removeProperty('background-color')
+      el.style.removeProperty('color')
+      el.style.removeProperty('font-family')
+      el.style.removeProperty('border-radius')
+    })
+    // Remove wrapper divs that carry white background
+    container.querySelectorAll('div').forEach(div => {
+      const bg = window?.getComputedStyle?.(div)?.backgroundColor
+      div.style.removeProperty('background')
+      div.style.removeProperty('background-color')
+    })
+  }
 
   function enhanceContent() {
     const container = containerRef.current
@@ -454,29 +499,25 @@ function EnhancedPlanRenderer({ html, isNutrition, images, onSwap, onAdd, onRemo
         if (!isNutritionTable) {
           // Exercise table - add image
           const img = getImage(exerciseName)
-          if (img && !firstCell.querySelector('img')) {
+          if (!firstCell.querySelector('.ex-img-wrap')) {
             const imgWrap = document.createElement('div')
-            imgWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:6px;'
-            const imgEl = document.createElement('img')
-            imgEl.src = img
-            imgEl.alt = exerciseName
-            imgEl.style.cssText = 'width:100px;height:100px;object-fit:contain;background:#1a1a1a;border-radius:8px;'
-            imgEl.onerror = () => imgEl.style.display = 'none'
-            imgWrap.appendChild(imgEl)
+            imgWrap.className = 'ex-img-wrap'
+            if (img) {
+              const imgEl = document.createElement('img')
+              imgEl.src = img
+              imgEl.alt = exerciseName
+              imgEl.className = 'ex-img'
+              imgEl.onerror = () => imgEl.remove()
+              imgWrap.appendChild(imgEl)
+            }
             const nameEl = document.createElement('span')
+            nameEl.className = 'ex-name'
             nameEl.textContent = exerciseName
             imgWrap.appendChild(nameEl)
-            
-            // Add swap button
-            const swapBtn = addSwapBtn(exerciseName, row, isNutritionTable, imgWrap)
-            
+            addSwapBtn(exerciseName, row, isNutritionTable, imgWrap)
             firstCell.textContent = ''
             firstCell.appendChild(imgWrap)
-          } else if (!firstCell.querySelector('.pt-swap-btn')) {
-            addSwapBtn(exerciseName, row, isNutritionTable, firstCell)
           }
-          
-          // Add remove button to last cell
           addRemoveBtn(exerciseName, row)
         } else {
           // Nutrition table
