@@ -44,19 +44,22 @@ export default function PlanView() {
     const parser = new DOMParser()
     const doc = parser.parseFromString(html, 'text/html')
     const exerciseNames = new Set()
-    doc.querySelectorAll('td:first-child, .exercise-name').forEach(el => {
-      const text = el.textContent.trim()
-      if (text && !DAYS.some(d => text.toLowerCase().includes(d.toLowerCase())) && text.length > 2) {
-        exerciseNames.add(text.toLowerCase())
-      }
-    })
-    // Also extract from text patterns
-    const textContent = doc.body.textContent
-    const lines = textContent.split('\n').map(l => l.trim()).filter(l => l.length > 2 && l.length < 50)
-    lines.forEach(line => {
-      if (!DAYS.some(d => line.toLowerCase().startsWith(d.toLowerCase()))) {
-        exerciseNames.add(line.toLowerCase())
-      }
+    // Only extract from tables that have Sets/Reps headers (real exercise tables)
+    doc.querySelectorAll('table').forEach(table => {
+      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+      const isExerciseTable = headers.some(h => h.includes('set') || h.includes('rep'))
+      if (!isExerciseTable) return
+      table.querySelectorAll('tbody tr td:first-child').forEach(cell => {
+        const text = cell.textContent.trim()
+        if (
+          text && text.length > 2 && text.length < 50 &&
+          !/^\d/.test(text) &&
+          !/^total/i.test(text) &&
+          !DAYS.some(d => text.toLowerCase().startsWith(d.toLowerCase()))
+        ) {
+          exerciseNames.add(text.toLowerCase())
+        }
+      })
     })
 
     const fetched = {}
@@ -79,11 +82,25 @@ export default function PlanView() {
     const parser = new DOMParser()
     const doc = parser.parseFromString(html, 'text/html')
     const names = new Set()
-    doc.querySelectorAll('td, li, h3, h4').forEach(el => {
-      const t = el.textContent.trim()
-      if (t && !DAYS.some(d => t.toLowerCase() === d.toLowerCase()) && t.length > 2 && t.length < 60 && !/^\d/.test(t) && !/^total/i.test(t) && !/^meal/i.test(t) && !/^day/i.test(t)) {
-        names.add(t)
-      }
+    // Only extract from exercise tables (those with Sets/Reps headers)
+    doc.querySelectorAll('table').forEach(table => {
+      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+      const isExerciseTable = headers.some(h => h.includes('set') || h.includes('rep'))
+      if (!isExerciseTable) return
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const firstCell = row.querySelector('td:first-child')
+        if (!firstCell) return
+        const t = firstCell.textContent.trim()
+        if (
+          t && t.length > 2 && t.length < 50 &&
+          !/^\d/.test(t) &&
+          !/^total/i.test(t) &&
+          !DAYS.some(d => t.toLowerCase().startsWith(d.toLowerCase())) &&
+          !/^(upper|lower|full|push|pull|leg)/i.test(t)
+        ) {
+          names.add(t)
+        }
+      })
     })
     return [...names]
   }
@@ -471,7 +488,12 @@ function EnhancedPlanRenderer({ html, isNutrition, images, onSwap, onAdd, onRemo
         }
       })
 
-      // Add "Add" button after each table
+      // Add "Add" button only after exercise/nutrition tables (not overview/split tables)
+      const tableHeaders = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+      const isExerciseOrNutritionTable = tableHeaders.some(h =>
+        h.includes('set') || h.includes('rep') || h.includes('food') || h.includes('calor') || h.includes('protein')
+      )
+      if (!isExerciseOrNutritionTable) return
       if (!table.nextElementSibling?.classList?.contains('pt-add-btn-wrap')) {
         const parent = table.parentElement
         const dayHeading = findPrecedingDayHeading(table)

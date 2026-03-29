@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { PLAN_CHAT_URL, SUPABASE_ANON_KEY } from '../constants'
 import styles from './AICoach.module.css'
 
+const DAILY_LIMIT = 10
+const STORAGE_KEY = (slug) => `pt_coach_${slug}_${new Date().toDateString()}`
+
 export default function AICoach({ slug }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: "Hey! I know your plan inside out. Ask me anything – substitutions, technique tips, or how to get the most out of your program.", time: now() }
@@ -9,9 +12,14 @@ export default function AICoach({ slug }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [showChips, setShowChips] = useState(true)
+  const [msgCount, setMsgCount] = useState(() => {
+    try { return parseInt(localStorage.getItem(STORAGE_KEY(slug)) || '0') } catch { return 0 }
+  })
   const bottomRef = useRef(null)
 
   const chips = ['Can I substitute an exercise?', 'How much rest between sets?', 'What should I eat before training?']
+  const remaining = DAILY_LIMIT - msgCount
+  const limitReached = remaining <= 0
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, loading])
 
@@ -20,10 +28,16 @@ export default function AICoach({ slug }) {
   }
 
   async function send(text) {
+    if (limitReached) return
     const userMsg = text || input.trim()
     if (!userMsg) return
     setInput('')
     setShowChips(false)
+
+    const newCount = msgCount + 1
+    setMsgCount(newCount)
+    try { localStorage.setItem(STORAGE_KEY(slug), String(newCount)) } catch {}
+
     setMessages(prev => [...prev, { role: 'user', content: userMsg, time: now() }])
     setLoading(true)
 
@@ -54,6 +68,9 @@ export default function AICoach({ slug }) {
           <h2 className={styles.title}>Ask Your AI Coach</h2>
           <p className={styles.sub}>Ask anything about your plan</p>
         </div>
+        <div className={styles.limitBadge} style={{ color: remaining <= 3 ? '#e05555' : 'var(--gold)' }}>
+          {remaining}/{DAILY_LIMIT} left today
+        </div>
       </div>
 
       <div className={styles.chatWindow}>
@@ -71,9 +88,7 @@ export default function AICoach({ slug }) {
             <div className={styles.avatar}>PT</div>
             <div className={styles.msgInner}>
               <div className={styles.bubble}>
-                <div className="dots-loader">
-                  <span /><span /><span />
-                </div>
+                <div className="dots-loader"><span /><span /><span /></div>
               </div>
             </div>
           </div>
@@ -81,7 +96,7 @@ export default function AICoach({ slug }) {
         <div ref={bottomRef} />
       </div>
 
-      {showChips && (
+      {showChips && !limitReached && (
         <div className={styles.chips}>
           {chips.map(c => (
             <button key={c} className={styles.chip} onClick={() => send(c)}>{c}</button>
@@ -89,16 +104,22 @@ export default function AICoach({ slug }) {
         </div>
       )}
 
-      <div className={styles.inputRow}>
-        <input
-          className={styles.input}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && send()}
-          placeholder="Ask about your plan..."
-        />
-        <button className={styles.sendBtn} onClick={() => send()}>→</button>
-      </div>
+      {limitReached ? (
+        <div className={styles.limitReached}>
+          You've used all {DAILY_LIMIT} questions for today. Come back tomorrow!
+        </div>
+      ) : (
+        <div className={styles.inputRow}>
+          <input
+            className={styles.input}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && send()}
+            placeholder="Ask about your plan..."
+          />
+          <button className={styles.sendBtn} onClick={() => send()}>→</button>
+        </div>
+      )}
     </div>
   )
 }

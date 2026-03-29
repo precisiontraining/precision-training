@@ -130,6 +130,22 @@
 .input:focus { border-color: var(--gold); }
 .input::placeholder { color: var(--gray); }
 
+.limitBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.limitReached {
+  text-align: center;
+  padding: 16px;
+  font-size: 13px;
+  color: #666;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
 .sendBtn {
   padding: 14px 20px;
   background: var(--gold);
