@@ -7,6 +7,115 @@ import styles from './PlanView.module.css'
 
 const HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' }
 
+// ── PARSE AI HTML → STRUCTURED DATA ──────────────────────────────────────────
+function parseTrainingPlan(html) {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  const result = { meta: {}, days: [], extras: [] }
+
+  // Extract meta info from first table (weekly split)
+  const allTables = [...doc.querySelectorAll('table')]
+  
+  // Find day sections by looking for headings + tables
+  const body = doc.body
+  const elements = [...body.querySelectorAll('h1,h2,h3,h4,h5,table,p,ul,li')]
+
+  let currentDay = null
+  let inDailySection = false
+
+  elements.forEach(el => {
+    const tag = el.tagName.toLowerCase()
+    const text = el.textContent.trim()
+
+    if ((tag === 'h2' || tag === 'h3') && DAYS.some(d => text.toLowerCase().includes(d.toLowerCase()))) {
+      currentDay = { title: text, exercises: [] }
+      result.days.push(currentDay)
+      inDailySection = true
+      return
+    }
+
+    if (tag === 'table' && currentDay) {
+      const headers = [...el.querySelectorAll('th')].map(h => h.textContent.toLowerCase().trim())
+      const isExTable = headers.some(h => h.includes('set') || h.includes('rep') || h.includes('exercise'))
+      if (!isExTable) return
+      el.querySelectorAll('tbody tr').forEach(row => {
+        const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
+        if (!cells[0] || cells[0].toLowerCase() === 'total') return
+        currentDay.exercises.push({
+          name: cells[0],
+          sets: cells[1] || '',
+          reps: cells[2] || '',
+          rest: cells[3] || '',
+          notes: cells[4] || '',
+        })
+      })
+    }
+  })
+
+  // If no days found, try different structure (tables only)
+  if (result.days.length === 0) {
+    allTables.forEach(table => {
+      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+      const isExTable = headers.some(h => h.includes('set') || h.includes('rep'))
+      if (!isExTable) return
+      
+      // Find preceding heading
+      let prev = table.previousElementSibling
+      let dayTitle = 'Workout'
+      while (prev) {
+        if (/h[1-6]/i.test(prev.tagName)) { dayTitle = prev.textContent.trim(); break }
+        prev = prev.previousElementSibling
+      }
+
+      const day = { title: dayTitle, exercises: [] }
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
+        if (!cells[0] || /^total/i.test(cells[0])) return
+        day.exercises.push({ name: cells[0], sets: cells[1]||'', reps: cells[2]||'', rest: cells[3]||'', notes: cells[4]||'' })
+      })
+      if (day.exercises.length > 0) result.days.push(day)
+    })
+  }
+
+  return result
+}
+
+function parseNutritionPlan(html) {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  const result = { meals: [], totals: null }
+
+  const allTables = [...doc.querySelectorAll('table')]
+  allTables.forEach(table => {
+    const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+    const isMealTable = headers.some(h => h.includes('food') || h.includes('calor') || h.includes('protein') || h.includes('amount'))
+    if (!isMealTable) return
+
+    let prev = table.previousElementSibling
+    let mealTitle = 'Meal'
+    while (prev) {
+      if (/h[1-6]/i.test(prev.tagName)) { mealTitle = prev.textContent.trim(); break }
+      prev = prev.previousElementSibling
+    }
+
+    const items = []
+    let totals = null
+    table.querySelectorAll('tbody tr, tfoot tr').forEach(row => {
+      const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
+      if (!cells[0]) return
+      if (/^total/i.test(cells[0])) {
+        totals = { kcal: cells[2]||cells[1]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' }
+        return
+      }
+      items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
+    })
+    if (items.length > 0) result.meals.push({ title: mealTitle, items, totals })
+  })
+
+  return result
+}
+
+// ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function PlanView() {
   const { slug } = useParams()
   const [password, setPassword] = useState('')
@@ -22,48 +131,44 @@ export default function PlanView() {
   const [suggestions, setSuggestions] = useState([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(null)
-  const planRef = useRef(null)
+  const [parsedPlan, setParsedPlan] = useState(null)
 
   async function unlock() {
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/plans?slug=eq.${slug}&select=*`, { headers: HEADERS })
       const data = await res.json()
-      if (!data || data.length === 0) { setError('Plan not found.'); setLoading(false); return }
+      if (!data?.length) { setError('Plan not found.'); setLoading(false); return }
       const p = data[0]
       if (p.password !== password) { setError('Incorrect password. Please check your email.'); setLoading(false); return }
       setPlan(p)
       setUnlocked(true)
-      setTimeout(() => fetchImages(p.html_content), 100)
+      const parsed = p.plan_type === 'nutrition' ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
+      setParsedPlan(parsed)
+      setTimeout(() => fetchImages(p.html_content, parsed), 100)
     } catch { setError('Something went wrong. Please try again.') }
     setLoading(false)
   }
 
-  async function fetchImages(html) {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const exerciseNames = new Set()
-    // Only extract from tables that have Sets/Reps headers (real exercise tables)
-    doc.querySelectorAll('table').forEach(table => {
-      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-      const isExerciseTable = headers.some(h => h.includes('set') || h.includes('rep'))
-      if (!isExerciseTable) return
-      table.querySelectorAll('tbody tr td:first-child').forEach(cell => {
-        const text = cell.textContent.trim()
-        if (
-          text && text.length > 2 && text.length < 50 &&
-          !/^\d/.test(text) &&
-          !/^total/i.test(text) &&
-          !DAYS.some(d => text.toLowerCase().startsWith(d.toLowerCase()))
-        ) {
-          exerciseNames.add(text.toLowerCase())
-        }
+  async function fetchImages(html, parsed) {
+    const names = new Set()
+    if (parsed?.days) {
+      parsed.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
+    } else {
+      // fallback: parse from HTML
+      const doc = new DOMParser().parseFromString(html, 'text/html')
+      doc.querySelectorAll('table').forEach(table => {
+        const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+        if (!headers.some(h => h.includes('set') || h.includes('rep'))) return
+        table.querySelectorAll('tbody tr td:first-child').forEach(cell => {
+          const t = cell.textContent.trim()
+          if (t && t.length > 2 && t.length < 50 && !/^\d/.test(t) && !/^total/i.test(t)) names.add(t.toLowerCase())
+        })
       })
-    })
+    }
 
     const fetched = {}
-    for (const name of exerciseNames) {
+    for (const name of names) {
       try {
         const res = await fetch(EXERCISE_GIF_URL, {
           method: 'POST',
@@ -77,31 +182,25 @@ export default function PlanView() {
     setImages(fetched)
   }
 
+  function getImage(name) {
+    if (!name) return null
+    const lower = name.toLowerCase().trim()
+    if (images[lower]) return images[lower]
+    const norm = lower.replace(/s$/, '').replace(/[-_]/g, ' ').replace(/\s+/g, ' ')
+    const entries = Object.entries(images)
+    return (
+      images[norm] ||
+      entries.find(([k]) => k.replace(/s$/, '').replace(/-/g,' ') === norm)?.[1] ||
+      entries.find(([k]) => lower.includes(k) || k.includes(lower))?.[1] ||
+      entries.find(([k]) => norm.split(' ')[0].length > 3 && k.includes(norm.split(' ')[0]))?.[1] ||
+      null
+    )
+  }
+
   function extractExercises(html) {
-    if (!html) return []
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
+    if (!parsedPlan?.days) return []
     const names = new Set()
-    // Only extract from exercise tables (those with Sets/Reps headers)
-    doc.querySelectorAll('table').forEach(table => {
-      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-      const isExerciseTable = headers.some(h => h.includes('set') || h.includes('rep'))
-      if (!isExerciseTable) return
-      table.querySelectorAll('tbody tr').forEach(row => {
-        const firstCell = row.querySelector('td:first-child')
-        if (!firstCell) return
-        const t = firstCell.textContent.trim()
-        if (
-          t && t.length > 2 && t.length < 50 &&
-          !/^\d/.test(t) &&
-          !/^total/i.test(t) &&
-          !DAYS.some(d => t.toLowerCase().startsWith(d.toLowerCase())) &&
-          !/^(upper|lower|full|push|pull|leg)/i.test(t)
-        ) {
-          names.add(t)
-        }
-      })
-    })
+    parsedPlan.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name)))
     return [...names]
   }
 
@@ -112,169 +211,104 @@ export default function PlanView() {
       body: JSON.stringify({ html_content: html }),
     })
     setPlan(prev => ({ ...prev, html_content: html }))
+    const parsed = plan?.plan_type === 'nutrition' ? parseNutritionPlan(html) : parseTrainingPlan(html)
+    setParsedPlan(parsed)
   }
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500) }
 
-  // SWAP MODAL
-  async function openSwap(item, currentSets, currentReps, currentRest) {
-    setSwapModal({ item, newName: '', sets: currentSets || '', reps: currentReps || '', rest: currentRest || '', calories: '', protein: '', carbs: '', fats: '', amount: '' })
-    setSuggestions([])
-    setLoadingSuggestions(true)
-    const isNutrition = plan?.plan_type === 'nutrition'
+  async function openSwap(exercise) {
+    setSwapModal({ item: exercise.name, newName: '', sets: exercise.sets, reps: exercise.reps, rest: exercise.rest })
+    setSuggestions([]); setLoadingSuggestions(true)
     try {
-      const res = await fetch(PLAN_CHAT_URL, {
-        method: 'POST',
-        headers: { ...HEADERS },
-        body: JSON.stringify({
-          slug,
-          message: isNutrition
-            ? `Suggest 3 alternative foods that have similar calories and macros to ${item}. Reply with only the 3 food names, comma separated, no explanation.`
-            : `Suggest 3 alternative exercises for ${item}. Reply with only the 3 exercise names, comma separated, no explanation.`,
-          history: [],
-        }),
-      })
+      const res = await fetch(PLAN_CHAT_URL, { method: 'POST', headers: { ...HEADERS },
+        body: JSON.stringify({ slug, message: `Suggest 3 alternative exercises for ${exercise.name}. Reply with only the 3 exercise names, comma separated.`, history: [] }) })
       const data = await res.json()
-      const suggs = data.reply?.split(',').map(s => s.trim()).filter(Boolean) || []
-      setSuggestions(suggs)
+      setSuggestions(data.reply?.split(',').map(s => s.trim()).filter(Boolean) || [])
     } catch {}
     setLoadingSuggestions(false)
   }
 
   async function applySwap() {
     if (!swapModal?.newName) return
-    const html = plan.html_content
-    const updated = html.replace(new RegExp(swapModal.item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), swapModal.newName)
+    const updated = plan.html_content.replace(
+      new RegExp(swapModal.item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+      swapModal.newName
+    )
     await savePlan(updated)
-    setSwapModal(null)
-    showToast('Swapped successfully ✓')
-    setTimeout(() => fetchImages(updated), 200)
+    setSwapModal(null); showToast('Swapped ✓')
+    setTimeout(() => fetchImages(updated, parsedPlan), 200)
   }
 
-  // ADD MODAL
-  async function openAdd(dayName) {
-    setAddModal({ day: dayName, name: '', sets: '3', reps: '8-12', rest: '90 sec', notes: '', calories: '', protein: '', carbs: '', fats: '', amount: '' })
-    setSuggestions([])
-    setLoadingSuggestions(true)
-    const isNutrition = plan?.plan_type === 'nutrition'
+  async function openAdd(dayTitle) {
+    setAddModal({ day: dayTitle, name: '', sets: '3', reps: '8-12', rest: '90s', notes: '' })
+    setSuggestions([]); setLoadingSuggestions(true)
     try {
-      const res = await fetch(PLAN_CHAT_URL, {
-        method: 'POST',
-        headers: { ...HEADERS },
-        body: JSON.stringify({
-          slug,
-          message: isNutrition
-            ? `Suggest 3 foods that fit well in a ${dayName} meal for my nutrition plan. Reply with only the 3 food names, comma separated, no explanation.`
-            : `Suggest 3 exercises that fit well with the other exercises on ${dayName} in my plan. Reply with only the 3 exercise names, comma separated, no explanation.`,
-          history: [],
-        }),
-      })
+      const res = await fetch(PLAN_CHAT_URL, { method: 'POST', headers: { ...HEADERS },
+        body: JSON.stringify({ slug, message: `Suggest 3 exercises for ${dayTitle}. Reply with only the 3 exercise names, comma separated.`, history: [] }) })
       const data = await res.json()
-      const suggs = data.reply?.split(',').map(s => s.trim()).filter(Boolean) || []
-      setSuggestions(suggs)
+      setSuggestions(data.reply?.split(',').map(s => s.trim()).filter(Boolean) || [])
     } catch {}
     setLoadingSuggestions(false)
   }
 
   async function applyAdd() {
     if (!addModal?.name) return
-    const isNutrition = plan?.plan_type === 'nutrition'
-    let newRow = ''
-    if (isNutrition) {
-      newRow = `<tr><td>${addModal.name}</td><td>${addModal.amount || '—'}</td><td>${addModal.calories || '—'}</td><td>${addModal.protein || '—'}</td><td>${addModal.carbs || '—'}</td><td>${addModal.fats || '—'}</td></tr>`
-    } else {
-      newRow = `<tr><td>${addModal.name}</td><td>${addModal.sets}</td><td>${addModal.reps}</td><td>${addModal.rest}</td><td>${addModal.notes}</td></tr>`
-    }
-    const dayPattern = new RegExp(`(${addModal.day}[^<]*<[^>]*>.*?</table>)`, 'si')
+    const newRow = `<tr><td>${addModal.name}</td><td>${addModal.sets}</td><td>${addModal.reps}</td><td>${addModal.rest}</td><td>${addModal.notes}</td></tr>`
+    const dayPattern = new RegExp(`(${addModal.day.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^<]*(?:<[^>]*>)*.*?</table>)`, 'si')
     const updated = plan.html_content.replace(dayPattern, m => m.replace('</table>', newRow + '</table>'))
-    await savePlan(updated)
-    setAddModal(null)
-    showToast(isNutrition ? 'Food added ✓' : 'Exercise added ✓')
-    setTimeout(() => fetchImages(updated), 200)
+    await savePlan(updated); setAddModal(null); showToast('Exercise added ✓')
+    setTimeout(() => fetchImages(updated, parsedPlan), 200)
   }
 
-  async function removeItem(item) {
-    const rowPattern = new RegExp(`<tr[^>]*>\\s*<td[^>]*>\\s*${item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*</td>[^<]*(?:<td[^>]*>[^<]*</td>\\s*)*</tr>`, 'gi')
+  async function removeItem(name) {
+    const rowPattern = new RegExp(`<tr[^>]*>\\s*<td[^>]*>\\s*${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*</td>[\\s\\S]*?</tr>`, 'gi')
     const updated = plan.html_content.replace(rowPattern, '')
-    await savePlan(updated)
-    setConfirmRemove(null)
-    showToast('Removed ✓')
+    await savePlan(updated); setConfirmRemove(null); showToast('Removed ✓')
   }
 
   const isNutrition = plan?.plan_type === 'nutrition'
-  const planTitle = isNutrition ? 'Your Personal Nutrition Plan' : 'Your Personal Training Plan'
 
-  if (!unlocked) {
-    return (
-      <div className={styles.lockPage}>
-        <div className={styles.lockCard}>
-          <div className={styles.lockIcon}>🔒</div>
-          <h1>Your Plan is Ready</h1>
-          <p>Enter the password from your email to access your personalized plan.</p>
-          <input
-            className={styles.lockInput}
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && unlock()}
-          />
-          {error && <div className={styles.lockError}>{error}</div>}
-          <button className={styles.lockBtn} onClick={unlock} disabled={loading}>
-            {loading ? 'Loading…' : '👁 View My Plan'}
-          </button>
-          <Link to="/" className={styles.lockBack}>← Back to Precision Training</Link>
-        </div>
+  if (!unlocked) return (
+    <div className={styles.lockPage}>
+      <div className={styles.lockCard}>
+        <img src="/logo.png" alt="Precision Training" className={styles.lockLogo} />
+        <h1>Your Plan is Ready</h1>
+        <p>Enter the password from your email to access your personalized plan.</p>
+        <input className={styles.lockInput} type="password" placeholder="Enter your password"
+          value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && unlock()} />
+        {error && <div className={styles.lockError}>{error}</div>}
+        <button className={styles.lockBtn} onClick={unlock} disabled={loading}>
+          {loading ? 'Loading…' : 'View My Plan →'}
+        </button>
+        <Link to="/" className={styles.lockBack}>← Back to Precision Training</Link>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
     <div className={styles.page}>
-      {/* HEADER */}
       <header className={styles.header}>
         <Link to="/" className={styles.logo}><span className={styles.gold}>Precision</span> Training</Link>
-        <h1 className={styles.planTitle}>{planTitle}</h1>
+        <h1 className={styles.planTitle}>{isNutrition ? 'Your Personal Nutrition Plan' : 'Your Personal Training Plan'}</h1>
       </header>
 
-      {/* STATS BAR */}
-      <div className={styles.statsBar}>
-        {plan?.plan_type === 'training' && (
-          <div className={styles.statItem}>
-            <span className={styles.statLabel}>TYPE</span>
-            <span className={styles.statValue}>Training</span>
-          </div>
-        )}
-        {plan?.plan_type === 'nutrition' && (
-          <div className={styles.statItem}>
-            <span className={styles.statLabel}>TYPE</span>
-            <span className={styles.statValue}>Nutrition</span>
-          </div>
-        )}
-      </div>
-
-      {/* TABS */}
       <div className={styles.tabs}>
-        <button className={`${styles.tab} ${tab === 'plan' ? styles.tabActive : ''}`} onClick={() => setTab('plan')}>My Plan</button>
-        <button className={`${styles.tab} ${tab === 'tracker' ? styles.tabActive : ''}`} onClick={() => setTab('tracker')}>Progress Tracker</button>
-        <button className={`${styles.tab} ${tab === 'coach' ? styles.tabActive : ''}`} onClick={() => setTab('coach')}>AI Coach</button>
+        {['plan','tracker','coach'].map(t => (
+          <button key={t} className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`} onClick={() => setTab(t)}>
+            {t === 'plan' ? 'My Plan' : t === 'tracker' ? 'Progress Tracker' : 'AI Coach'}
+          </button>
+        ))}
       </div>
 
-      {/* CONTENT */}
       <div className={styles.content}>
-        {tab === 'plan' && (
-          <PlanContent
-            plan={plan}
-            images={images}
-            isNutrition={isNutrition}
-            onSwap={openSwap}
-            onAdd={openAdd}
-            onRemove={name => setConfirmRemove(name)}
-          />
+        {tab === 'plan' && parsedPlan && (
+          isNutrition
+            ? <NutritionView parsed={parsedPlan} />
+            : <TrainingView parsed={parsedPlan} images={images} getImage={getImage}
+                onSwap={openSwap} onAdd={openAdd} onRemove={name => setConfirmRemove(name)} />
         )}
-        {tab === 'tracker' && (
-          <ProgressTracker slug={slug} exercises={extractExercises(plan?.html_content)} />
-        )}
+        {tab === 'tracker' && <ProgressTracker slug={slug} exercises={extractExercises(plan?.html_content)} />}
         {tab === 'coach' && <AICoach slug={slug} />}
       </div>
 
@@ -284,32 +318,22 @@ export default function PlanView() {
           <div className="modal">
             <h3>Swap "{swapModal.item}"</h3>
             <div className="modal-label">Replace with</div>
-            <input className="modal-input" value={swapModal.newName} onChange={e => setSwapModal(p => ({ ...p, newName: e.target.value }))} placeholder={isNutrition ? 'e.g. Brown Rice' : 'e.g. Dumbbell Press'} />
-            {loadingSuggestions && <div style={{ color: 'var(--gray)', fontSize: 12, marginBottom: 8 }}>Loading suggestions…</div>}
+            <input className="modal-input" value={swapModal.newName}
+              onChange={e => setSwapModal(p => ({ ...p, newName: e.target.value }))} placeholder="e.g. Dumbbell Press" />
+            {loadingSuggestions && <div style={{color:'var(--gray)',fontSize:12,marginBottom:8}}>Loading suggestions…</div>}
             {suggestions.length > 0 && (
               <div className="suggestion-chips">
                 {suggestions.map(s => <button key={s} className="chip" onClick={() => setSwapModal(p => ({ ...p, newName: s }))}>{s}</button>)}
               </div>
             )}
-            {isNutrition ? (
-              <div className="modal-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-                {[['Calories (kcal)', 'calories'], ['Protein (g)', 'protein'], ['Carbs (g)', 'carbs'], ['Fats (g)', 'fats'], ['Amount (g)', 'amount']].map(([label, key]) => (
-                  <div key={key}>
-                    <div className="modal-label">{label}</div>
-                    <input className="modal-input" type="number" value={swapModal[key]} onChange={e => setSwapModal(p => ({ ...p, [key]: e.target.value }))} placeholder="0" style={{ marginBottom: 0 }} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="modal-row">
-                {[['Sets', 'sets'], ['Reps', 'reps'], ['Rest', 'rest']].map(([label, key]) => (
-                  <div key={key}>
-                    <div className="modal-label">{label}</div>
-                    <input className="modal-input" value={swapModal[key]} onChange={e => setSwapModal(p => ({ ...p, [key]: e.target.value }))} placeholder={label} style={{ marginBottom: 0 }} />
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="modal-row">
+              {[['Sets','sets'],['Reps','reps'],['Rest','rest']].map(([label,key]) => (
+                <div key={key}>
+                  <div className="modal-label">{label}</div>
+                  <input className="modal-input" value={swapModal[key]} onChange={e => setSwapModal(p => ({ ...p, [key]: e.target.value }))} placeholder={label} style={{marginBottom:0}} />
+                </div>
+              ))}
+            </div>
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setSwapModal(null)}>Cancel</button>
               <button className="btn-confirm" onClick={applySwap}>Apply Swap</button>
@@ -322,41 +346,29 @@ export default function PlanView() {
       {addModal && (
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setAddModal(null)}>
           <div className="modal">
-            <h3>{isNutrition ? `Add Food to ${addModal.day}` : `Add Exercise to ${addModal.day}`}</h3>
-            <div className="modal-label">{isNutrition ? 'Food name' : 'Exercise name'}</div>
-            <input className="modal-input" value={addModal.name} onChange={e => setAddModal(p => ({ ...p, name: e.target.value }))} placeholder={isNutrition ? 'e.g. Avocado' : 'e.g. Cable Fly'} />
-            {loadingSuggestions && <div style={{ color: 'var(--gray)', fontSize: 12, marginBottom: 8 }}>Loading suggestions…</div>}
+            <h3>Add Exercise to {addModal.day}</h3>
+            <div className="modal-label">Exercise name</div>
+            <input className="modal-input" value={addModal.name}
+              onChange={e => setAddModal(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Cable Fly" />
+            {loadingSuggestions && <div style={{color:'var(--gray)',fontSize:12,marginBottom:8}}>Loading suggestions…</div>}
             {suggestions.length > 0 && (
               <div className="suggestion-chips">
                 {suggestions.map(s => <button key={s} className="chip" onClick={() => setAddModal(p => ({ ...p, name: s }))}>{s}</button>)}
               </div>
             )}
-            {isNutrition ? (
-              <div className="modal-row" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
-                {[['Amount (g)', 'amount'], ['Calories', 'calories'], ['Protein (g)', 'protein'], ['Carbs (g)', 'carbs'], ['Fats (g)', 'fats']].map(([label, key]) => (
-                  <div key={key}>
-                    <div className="modal-label">{label}</div>
-                    <input className="modal-input" type="number" value={addModal[key]} onChange={e => setAddModal(p => ({ ...p, [key]: e.target.value }))} placeholder="0" style={{ marginBottom: 0 }} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <>
-                <div className="modal-row">
-                  {[['Sets', 'sets', '3'], ['Reps', 'reps', '8-12'], ['Rest', 'rest', '90 sec']].map(([label, key, ph]) => (
-                    <div key={key}>
-                      <div className="modal-label">{label}</div>
-                      <input className="modal-input" value={addModal[key]} onChange={e => setAddModal(p => ({ ...p, [key]: e.target.value }))} placeholder={ph} style={{ marginBottom: 0 }} />
-                    </div>
-                  ))}
+            <div className="modal-row">
+              {[['Sets','sets','3'],['Reps','reps','8-12'],['Rest','rest','90s']].map(([label,key,ph]) => (
+                <div key={key}>
+                  <div className="modal-label">{label}</div>
+                  <input className="modal-input" value={addModal[key]} onChange={e => setAddModal(p => ({ ...p, [key]: e.target.value }))} placeholder={ph} style={{marginBottom:0}} />
                 </div>
-                <div className="modal-label">Notes (optional)</div>
-                <input className="modal-input" value={addModal.notes} onChange={e => setAddModal(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. Focus on form" />
-              </>
-            )}
+              ))}
+            </div>
+            <div className="modal-label">Notes (optional)</div>
+            <input className="modal-input" value={addModal.notes} onChange={e => setAddModal(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. Focus on form" />
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setAddModal(null)}>Cancel</button>
-              <button className="btn-confirm" onClick={applyAdd}>{isNutrition ? 'Add Food' : 'Add Exercise'}</button>
+              <button className="btn-confirm" onClick={applyAdd}>Add Exercise</button>
             </div>
           </div>
         </div>
@@ -367,10 +379,10 @@ export default function PlanView() {
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setConfirmRemove(null)}>
           <div className="modal">
             <h3>Remove "{confirmRemove}"?</h3>
-            <p style={{ color: 'var(--gray)', fontSize: 14, marginBottom: 16 }}>This will permanently remove it from your plan.</p>
+            <p style={{color:'var(--gray)',fontSize:14,marginBottom:16}}>This will permanently remove it from your plan.</p>
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setConfirmRemove(null)}>Cancel</button>
-              <button className="btn-confirm" style={{ background: '#ef4444' }} onClick={() => removeItem(confirmRemove)}>Remove</button>
+              <button className="btn-confirm" style={{background:'#ef4444'}} onClick={() => removeItem(confirmRemove)}>Remove</button>
             </div>
           </div>
         </div>
@@ -381,233 +393,136 @@ export default function PlanView() {
   )
 }
 
-function PlanContent({ plan, images, isNutrition, onSwap, onAdd, onRemove }) {
-  const [parsedDays, setParsedDays] = useState([])
-  const [rawSections, setRawSections] = useState([])
+// ── TRAINING VIEW ─────────────────────────────────────────────────────────────
+function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
+  const [activeDay, setActiveDay] = useState(0)
+  const days = parsed.days || []
+  if (!days.length) return <div className={styles.empty}>No workout data found in this plan.</div>
 
-  useEffect(() => {
-    if (!plan?.html_content) return
-    parseContent(plan.html_content)
-  }, [plan?.html_content])
-
-  function parseContent(html) {
-    // Parse the HTML to extract structured data
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    
-    // Try to find day sections - look for heading elements that contain day names or meal names
-    const sections = []
-    const allElements = doc.body.children
-
-    // Just render the HTML directly with enhancement overlay
-    setRawSections(html)
-  }
-
-  function getImageForExercise(name) {
-    if (!name) return null
-    const lower = name.toLowerCase().trim()
-    // Normalize: remove trailing s, convert - to space
-    const normalized = lower.replace(/s$/, '').replace(/-/g, ' ').replace(/\s+/g, ' ')
-    
-    // 1. Exact match
-    if (images[lower]) return images[lower]
-    // 2. Normalized match
-    if (images[normalized]) return images[normalized]
-    // 3. Partial match - key includes search term or vice versa
-    const entries = Object.entries(images)
-    const partial = entries.find(([k]) => {
-      const kn = k.replace(/s$/, '').replace(/-/g, ' ')
-      return kn === normalized || k.includes(normalized) || normalized.includes(kn) ||
-             lower.includes(k) || k.includes(lower)
-    })
-    if (partial) return partial[1]
-    // 4. Word-based match - check if first significant word matches
-    const firstWord = normalized.split(' ')[0]
-    if (firstWord.length > 4) {
-      const wordMatch = entries.find(([k]) => k.includes(firstWord))
-      if (wordMatch) return wordMatch[1]
-    }
-    return null
-  }
+  const day = days[activeDay]
 
   return (
-    <div className={styles.planContent}>
-      <EnhancedPlanRenderer 
-        html={plan?.html_content || ''} 
-        isNutrition={isNutrition}
-        images={images}
-        onSwap={onSwap}
-        onAdd={onAdd}
-        onRemove={onRemove}
-        getImage={getImageForExercise}
-      />
+    <div className={styles.trainingView}>
+      {/* Day selector */}
+      <div className={styles.dayTabs}>
+        {days.map((d, i) => {
+          const dayName = d.title.split(/[-–]/)[0].trim().split(' ').slice(-1)[0]
+          return (
+            <button key={i} className={`${styles.dayTab} ${activeDay === i ? styles.dayTabActive : ''}`}
+              onClick={() => setActiveDay(i)}>
+              <span className={styles.dayTabLabel}>{dayName}</span>
+              <span className={styles.dayTabSub}>{d.title.includes('-') || d.title.includes('–') ? d.title.split(/[-–]/)[1]?.trim() : ''}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Active day */}
+      <div className={styles.dayContent}>
+        <div className={styles.dayHeader}>
+          <h2 className={styles.dayTitle}>{day.title}</h2>
+          <span className={styles.dayCount}>{day.exercises.length} exercises</span>
+        </div>
+
+        <div className={styles.exerciseList}>
+          {day.exercises.map((ex, i) => {
+            const img = getImage(ex.name)
+            return (
+              <div key={i} className={styles.exerciseCard}>
+                <div className={styles.exerciseNum}>{String(i + 1).padStart(2, '0')}</div>
+                <div className={styles.exerciseImg}>
+                  {img
+                    ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => e.target.style.display='none'} />
+                    : <div className={styles.exImgPlaceholder}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+                  }
+                </div>
+                <div className={styles.exerciseInfo}>
+                  <div className={styles.exerciseName}>{ex.name}</div>
+                  {ex.notes && <div className={styles.exerciseNotes}>{ex.notes}</div>}
+                  <div className={styles.exerciseMeta}>
+                    {ex.sets && <span className={styles.metaTag}><span className={styles.metaKey}>Sets</span>{ex.sets}</span>}
+                    {ex.reps && <span className={styles.metaTag}><span className={styles.metaKey}>Reps</span>{ex.reps}</span>}
+                    {ex.rest && <span className={styles.metaTag}><span className={styles.metaKey}>Rest</span>{ex.rest}</span>}
+                  </div>
+                </div>
+                <div className={styles.exerciseActions}>
+                  <button className={styles.actionBtn} onClick={() => onSwap(ex)} title="Swap exercise">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  </button>
+                  <button className={styles.actionBtn} style={{color:'#e05555'}} onClick={() => onRemove(ex.name)} title="Remove">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <button className={styles.addExBtn} onClick={() => onAdd(day.title)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Exercise
+        </button>
+      </div>
     </div>
   )
 }
 
-function EnhancedPlanRenderer({ html, isNutrition, images, onSwap, onAdd, onRemove, getImage }) {
-  const containerRef = useRef(null)
+// ── NUTRITION VIEW ────────────────────────────────────────────────────────────
+function NutritionView({ parsed }) {
+  const [activeMeal, setActiveMeal] = useState(0)
+  const meals = parsed.meals || []
+  if (!meals.length) return <div className={styles.empty}>No nutrition data found in this plan.</div>
 
-  useEffect(() => {
-    if (!containerRef.current || !html) return
-    containerRef.current.innerHTML = html
-    stripInlineStyles()
-    enhanceContent()
-  }, [html, images])
+  const meal = meals[activeMeal]
 
-  function stripInlineStyles() {
-    const container = containerRef.current
-    if (!container) return
-    // Unwrap body tag if AI wrapped content in full HTML doc
-    const bodyEl = container.querySelector('body')
-    if (bodyEl) { container.innerHTML = bodyEl.innerHTML }
-    // Remove all inline bg/color styles injected by AI
-    container.querySelectorAll('[style]').forEach(el => {
-      el.style.removeProperty('background')
-      el.style.removeProperty('background-color')
-      el.style.removeProperty('color')
-      el.style.removeProperty('font-family')
-      el.style.removeProperty('border-radius')
-    })
-    // Remove wrapper divs that carry white background
-    container.querySelectorAll('div').forEach(div => {
-      const bg = window?.getComputedStyle?.(div)?.backgroundColor
-      div.style.removeProperty('background')
-      div.style.removeProperty('background-color')
-    })
-  }
+  return (
+    <div className={styles.trainingView}>
+      <div className={styles.dayTabs}>
+        {meals.map((m, i) => (
+          <button key={i} className={`${styles.dayTab} ${activeMeal === i ? styles.dayTabActive : ''}`}
+            onClick={() => setActiveMeal(i)}>
+            <span className={styles.dayTabLabel}>{m.title.replace(/meal\s*/i, 'Meal ').split(':')[0]}</span>
+            <span className={styles.dayTabSub}>{m.title.includes(':') ? m.title.split(':')[1]?.trim() : ''}</span>
+          </button>
+        ))}
+      </div>
 
-  function enhanceContent() {
-    const container = containerRef.current
-    if (!container) return
+      <div className={styles.dayContent}>
+        <div className={styles.dayHeader}>
+          <h2 className={styles.dayTitle}>{meal.title}</h2>
+          <span className={styles.dayCount}>{meal.items.length} items</span>
+        </div>
 
-    // Add images to exercise rows
-    const tables = container.querySelectorAll('table')
-    tables.forEach(table => {
-      const rows = table.querySelectorAll('tbody tr')
-      rows.forEach(row => {
-        const firstCell = row.querySelector('td:first-child')
-        if (!firstCell) return
-        const exerciseName = firstCell.textContent.trim()
-        if (!exerciseName || exerciseName.toLowerCase() === 'total') return
-        if (DAYS.some(d => exerciseName.toLowerCase().startsWith(d.toLowerCase()))) return
+        <div className={styles.nutritionList}>
+          {meal.items.map((item, i) => (
+            <div key={i} className={styles.nutritionCard}>
+              <div className={styles.nutritionNum}>{String(i + 1).padStart(2, '0')}</div>
+              <div className={styles.nutritionInfo}>
+                <div className={styles.exerciseName}>{item.food}</div>
+                <div className={styles.exerciseMeta}>
+                  {item.amount && <span className={styles.metaTag}><span className={styles.metaKey}>Amount</span>{item.amount}</span>}
+                  {item.kcal && <span className={styles.metaTag}><span className={styles.metaKey}>kcal</span>{item.kcal}</span>}
+                  {item.protein && <span className={styles.metaTag}><span className={styles.metaKey}>Protein</span>{item.protein}</span>}
+                  {item.carbs && <span className={styles.metaTag}><span className={styles.metaKey}>Carbs</span>{item.carbs}</span>}
+                  {item.fats && <span className={styles.metaTag}><span className={styles.metaKey}>Fats</span>{item.fats}</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-        // Check if it's a nutrition table (has Food Item column)
-        const headers = table.querySelectorAll('th')
-        const isNutritionTable = [...headers].some(h => h.textContent.toLowerCase().includes('food') || h.textContent.toLowerCase().includes('calories'))
-
-        if (!isNutritionTable) {
-          // Exercise table - add image
-          const img = getImage(exerciseName)
-          if (!firstCell.querySelector('.ex-img-wrap')) {
-            const imgWrap = document.createElement('div')
-            imgWrap.className = 'ex-img-wrap'
-            if (img) {
-              const imgEl = document.createElement('img')
-              imgEl.src = img
-              imgEl.alt = exerciseName
-              imgEl.className = 'ex-img'
-              imgEl.onerror = () => imgEl.remove()
-              imgWrap.appendChild(imgEl)
-            }
-            const nameEl = document.createElement('span')
-            nameEl.className = 'ex-name'
-            nameEl.textContent = exerciseName
-            imgWrap.appendChild(nameEl)
-            addSwapBtn(exerciseName, row, isNutritionTable, imgWrap)
-            firstCell.textContent = ''
-            firstCell.appendChild(imgWrap)
-          }
-          addRemoveBtn(exerciseName, row)
-        } else {
-          // Nutrition table
-          if (exerciseName.toLowerCase() === 'total') return
-          if (!firstCell.querySelector('.pt-swap-btn')) {
-            addSwapBtn(exerciseName, row, isNutritionTable, firstCell)
-          }
-          addRemoveBtn(exerciseName, row)
-        }
-      })
-
-      // Add "Add" button only after exercise/nutrition tables (not overview/split tables)
-      const tableHeaders = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-      const isExerciseOrNutritionTable = tableHeaders.some(h =>
-        h.includes('set') || h.includes('rep') || h.includes('food') || h.includes('calor') || h.includes('protein')
-      )
-      if (!isExerciseOrNutritionTable) return
-      if (!table.nextElementSibling?.classList?.contains('pt-add-btn-wrap')) {
-        const parent = table.parentElement
-        const dayHeading = findPrecedingDayHeading(table)
-        const addWrap = document.createElement('div')
-        addWrap.className = 'pt-add-btn-wrap'
-        addWrap.style.cssText = 'margin:12px 0 24px;'
-        const addBtn = document.createElement('button')
-        addBtn.textContent = isNutrition ? '+ Add Food' : '+ Add Exercise'
-        addBtn.className = 'pt-add-btn'
-        addBtn.style.cssText = `
-          width:100%;padding:14px;
-          border:1px dashed var(--gold);
-          background:transparent;color:var(--gold);
-          border-radius:10px;font-size:14px;font-weight:700;
-          cursor:pointer;font-family:'Montserrat',sans-serif;
-          transition:all 0.2s;
-        `
-        addBtn.onmouseenter = () => { addBtn.style.background = 'rgba(200,169,110,0.1)' }
-        addBtn.onmouseleave = () => { addBtn.style.background = 'transparent' }
-        addBtn.onclick = () => onAdd(dayHeading || 'this section')
-        addWrap.appendChild(addBtn)
-        table.parentNode.insertBefore(addWrap, table.nextSibling)
-      }
-    })
-  }
-
-  function findPrecedingDayHeading(el) {
-    let prev = el.previousElementSibling
-    while (prev) {
-      const text = prev.textContent.trim()
-      if (DAYS.some(d => text.toLowerCase().includes(d.toLowerCase()))) return text
-      if (/meal \d/i.test(text)) return text
-      prev = prev.previousElementSibling
-    }
-    return null
-  }
-
-  function addSwapBtn(name, row, isNutrition, container) {
-    const btn = document.createElement('button')
-    btn.className = 'pt-swap-btn'
-    btn.title = 'Swap'
-    btn.innerHTML = '⇄'
-    btn.style.cssText = `
-      background:transparent;border:none;color:var(--gold);
-      cursor:pointer;font-size:14px;padding:2px 4px;
-      opacity:0.7;transition:opacity 0.2s;margin-left:4px;
-    `
-    btn.onmouseenter = () => { btn.style.opacity = '1' }
-    btn.onmouseleave = () => { btn.style.opacity = '0.7' }
-    const cells = row.querySelectorAll('td')
-    btn.onclick = () => onSwap(name, cells[1]?.textContent, cells[2]?.textContent, cells[3]?.textContent)
-    container.appendChild(btn)
-    return btn
-  }
-
-  function addRemoveBtn(name, row) {
-    if (name.toLowerCase() === 'total') return
-    const lastCell = row.querySelector('td:last-child')
-    if (!lastCell || lastCell.querySelector('.pt-remove-btn')) return
-    const btn = document.createElement('button')
-    btn.className = 'pt-remove-btn'
-    btn.innerHTML = '🗑'
-    btn.title = 'Remove'
-    btn.style.cssText = `
-      background:transparent;border:none;cursor:pointer;
-      font-size:13px;opacity:0;padding:2px 4px;
-      transition:opacity 0.2s;margin-left:6px;
-    `
-    row.onmouseenter = () => { btn.style.opacity = '1' }
-    row.onmouseleave = () => { btn.style.opacity = '0' }
-    btn.onclick = (e) => { e.stopPropagation(); onRemove(name) }
-    lastCell.appendChild(btn)
-  }
-
-  return <div ref={containerRef} className={styles.planHtml} />
+        {meal.totals && (
+          <div className={styles.mealTotals}>
+            <span className={styles.totalsLabel}>Meal Total</span>
+            <div className={styles.totalsMeta}>
+              {meal.totals.kcal && <span className={styles.totalTag}><span>kcal</span>{meal.totals.kcal}</span>}
+              {meal.totals.protein && <span className={styles.totalTag}><span>Protein</span>{meal.totals.protein}</span>}
+              {meal.totals.carbs && <span className={styles.totalTag}><span>Carbs</span>{meal.totals.carbs}</span>}
+              {meal.totals.fats && <span className={styles.totalTag}><span>Fats</span>{meal.totals.fats}</span>}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
