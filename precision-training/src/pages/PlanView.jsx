@@ -397,13 +397,13 @@ export default function PlanView() {
 // ── EXERCISE FALLBACK IMAGE ───────────────────────────────────────────────────
 const FALLBACK_IMAGES = {
   chest:     'https://upload.wikimedia.org/wikipedia/commons/1/1a/Push-ups-2.png',
-  back:      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Chin_ups_1.svg/400px-Chin_ups_1.svg.png',
+  back:      'https://upload.wikimedia.org/wikipedia/commons/b/bd/Chin-ups-1.png',
   shoulders: 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Dumbbell-shoulder-press-2.png',
-  biceps:    'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Alternating_bicep_curl_with_dumbbell_1.svg/400px-Alternating_bicep_curl_with_dumbbell_1.svg.png',
-  triceps:   'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Tricep_dips_1.svg/400px-Tricep_dips_1.svg.png',
-  legs:      'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Front_squat_with_barbell_1.svg/400px-Front_squat_with_barbell_1.svg.png',
-  core:      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Crunches_1.svg/400px-Crunches_1.svg.png',
-  general:   'https://upload.wikimedia.org/wikipedia/commons/8/8e/Lunges-2-2.png',
+  biceps:    'https://upload.wikimedia.org/wikipedia/commons/f/fd/Dumbbell-lateral-raises-1.png',
+  triceps:   'https://upload.wikimedia.org/wikipedia/commons/0/05/Triceps-pushdown-2.gif',
+  legs:      'https://upload.wikimedia.org/wikipedia/commons/8/8e/Lunges-2-2.png',
+  core:      'https://upload.wikimedia.org/wikipedia/commons/e/ec/Decline-sit-up-2.png',
+  general:   'https://upload.wikimedia.org/wikipedia/commons/1/1a/Push-ups-2.png',
 }
 
 function getMuscleGroup(name) {
@@ -420,7 +420,11 @@ function getMuscleGroup(name) {
 
 function ExerciseFallback({ name }) {
   const src = FALLBACK_IMAGES[getMuscleGroup(name)]
-  return <img src={src} alt={name} style={{ width:'100%', height:'100%', objectFit:'contain', padding:'5px' }} />
+  return (
+    <div style={{ width:'100%', height:'100%', background:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <img src={src} alt={name} style={{ width:'90%', height:'90%', objectFit:'contain' }} />
+    </div>
+  )
 }
 // ── TRAINING VIEW ─────────────────────────────────────────────────────────────
 function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
