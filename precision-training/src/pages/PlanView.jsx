@@ -393,6 +393,110 @@ export default function PlanView() {
   )
 }
 
+
+// ── EXERCISE FALLBACK IMAGE ───────────────────────────────────────────────────
+function getMuscleGroup(name) {
+  const n = name.toLowerCase()
+  if (/chest|bench|fly|flies|flyes|push.?up|pec|dip/.test(n)) return 'chest'
+  if (/back|row|pull|lat|deadlift|rdl|hyperext|good.?morn/.test(n)) return 'back'
+  if (/shoulder|press|delt|lateral|front.?raise|shrug|upright/.test(n)) return 'shoulders'
+  if (/bicep|curl|hammer|chin/.test(n)) return 'biceps'
+  if (/tricep|pushdown|skull|overhead.?ext|dips|extension/.test(n)) return 'triceps'
+  if (/squat|lunge|leg.?press|quad|hamstring|calf|glute|hip.?thrust|step.?up|leg.?curl|leg.?ext/.test(n)) return 'legs'
+  if (/crunch|plank|core|ab|sit.?up|russian|oblique|side.?bend/.test(n)) return 'core'
+  return 'general'
+}
+
+const MUSCLE_ICONS = {
+  chest: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <path d="M10 20 C10 14 16 11 24 14 C32 11 38 14 38 20 L38 28 C38 32 34 35 30 34 L24 32 L18 34 C14 35 10 32 10 28 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M24 14 L24 32" stroke="#c8a96e" strokeWidth="1" strokeDasharray="2 2"/>
+      <circle cx="18" cy="22" r="3" fill="#c8a96e" opacity="0.4"/>
+      <circle cx="30" cy="22" r="3" fill="#c8a96e" opacity="0.4"/>
+    </svg>
+  ),
+  back: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <path d="M16 10 L32 10 L34 18 L30 38 L24 36 L18 38 L14 18 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M24 10 L24 36" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M16 18 L32 18" stroke="#c8a96e" strokeWidth="1" opacity="0.5"/>
+      <path d="M15 26 L33 26" stroke="#c8a96e" strokeWidth="1" opacity="0.5"/>
+      <path d="M16 34 L32 34" stroke="#c8a96e" strokeWidth="1" opacity="0.5"/>
+    </svg>
+  ),
+  shoulders: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <circle cx="24" cy="18" r="6" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M8 22 C8 18 12 16 18 18 L24 20 L30 18 C36 16 40 18 40 22 L40 28 C36 30 30 28 24 26 C18 28 12 30 8 28 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <circle cx="10" cy="24" r="4" fill="#c8a96e" opacity="0.35"/>
+      <circle cx="38" cy="24" r="4" fill="#c8a96e" opacity="0.35"/>
+    </svg>
+  ),
+  biceps: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <path d="M18 36 L16 24 C15 18 18 13 24 13 C30 13 33 18 32 24 L30 36 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M18 22 C20 18 28 18 30 22" stroke="#c8a96e" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="24" cy="20" r="4" fill="#c8a96e" opacity="0.4"/>
+    </svg>
+  ),
+  triceps: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <path d="M18 36 L16 24 C15 18 18 13 24 13 C30 13 33 18 32 24 L30 36 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M16 26 C18 30 30 30 32 26" stroke="#c8a96e" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="24" cy="28" r="4" fill="#c8a96e" opacity="0.4"/>
+    </svg>
+  ),
+  legs: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <path d="M17 10 L16 26 L14 40" stroke="#c8a96e" strokeWidth="5" strokeLinecap="round" fill="none"/>
+      <path d="M31 10 L32 26 L34 40" stroke="#c8a96e" strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.5"/>
+      <path d="M15 10 L33 10 L32 20 L16 20 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M16 20 L15 30 L17 30 L18 20 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1"/>
+      <path d="M32 20 L33 30 L31 30 L30 20 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1" opacity="0.5"/>
+    </svg>
+  ),
+  core: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <rect x="16" y="12" width="16" height="26" rx="4" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <line x1="24" y1="12" x2="24" y2="38" stroke="#c8a96e" strokeWidth="1"/>
+      <line x1="16" y1="20" x2="32" y2="20" stroke="#c8a96e" strokeWidth="1" opacity="0.6"/>
+      <line x1="16" y1="27" x2="32" y2="27" stroke="#c8a96e" strokeWidth="1" opacity="0.6"/>
+      <circle cx="20" cy="16" r="2" fill="#c8a96e" opacity="0.5"/>
+      <circle cx="28" cy="16" r="2" fill="#c8a96e" opacity="0.5"/>
+      <circle cx="20" cy="23" r="2" fill="#c8a96e" opacity="0.5"/>
+      <circle cx="28" cy="23" r="2" fill="#c8a96e" opacity="0.5"/>
+      <circle cx="20" cy="31" r="2" fill="#c8a96e" opacity="0.5"/>
+      <circle cx="28" cy="31" r="2" fill="#c8a96e" opacity="0.5"/>
+    </svg>
+  ),
+  general: (
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="10" fill="#f5f5f5"/>
+      <circle cx="24" cy="13" r="5" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <path d="M14 22 C14 19 18 17 24 17 C30 17 34 19 34 22 L34 28 L28 30 L28 40 L20 40 L20 30 L14 28 Z" fill="#e8e0d0" stroke="#c8a96e" strokeWidth="1.5"/>
+      <line x1="14" y1="28" x2="8" y2="34" stroke="#c8a96e" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="34" y1="28" x2="40" y2="34" stroke="#c8a96e" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+}
+
+function ExerciseFallback({ name }) {
+  const group = getMuscleGroup(name)
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      {MUSCLE_ICONS[group]}
+    </div>
+  )
+}
+
 // ── TRAINING VIEW ─────────────────────────────────────────────────────────────
 function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
   const [activeDay, setActiveDay] = useState(0)
@@ -433,7 +537,7 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
                 <div className={styles.exerciseImg}>
                   {img
                     ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => e.target.style.display='none'} />
-                    : <div className={styles.exImgPlaceholder}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+                    : <div className={styles.exImgPlaceholder}><ExerciseFallback name={ex.name} /></div>
                   }
                 </div>
                 <div className={styles.exerciseInfo}>
