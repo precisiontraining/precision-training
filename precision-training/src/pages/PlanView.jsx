@@ -237,7 +237,7 @@ export default function PlanView() {
     )
     await savePlan(updated)
     setSwapModal(null); showToast('Swapped ✓')
-    setTimeout(() => fetchImages(updated, parsedPlan), 200)
+    setTimeout(() => fetchImages(updated, parseTrainingPlan(updated)), 200)
   }
 
   async function openAdd(dayTitle) {
@@ -258,7 +258,7 @@ export default function PlanView() {
     const dayPattern = new RegExp(`(${addModal.day.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^<]*(?:<[^>]*>)*.*?</table>)`, 'si')
     const updated = plan.html_content.replace(dayPattern, m => m.replace('</table>', newRow + '</table>'))
     await savePlan(updated); setAddModal(null); showToast('Exercise added ✓')
-    setTimeout(() => fetchImages(updated, parsedPlan), 200)
+    setTimeout(() => fetchImages(updated, parseTrainingPlan(updated)), 200)
   }
 
   async function removeItem(name) {
