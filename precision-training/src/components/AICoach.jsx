@@ -1,13 +1,46 @@
 import { useState, useRef, useEffect } from 'react'
-import { PLAN_CHAT_URL, SUPABASE_ANON_KEY } from '../constants'
+import { PLAN_CHAT_URL, SUPABASE_ANON_KEY, TALLY_TRAINING } from '../constants'
 import styles from './AICoach.module.css'
 
 const DAILY_LIMIT = 10
 const STORAGE_KEY = (slug) => `pt_coach_${slug}_${new Date().toDateString()}`
 
-export default function AICoach({ slug }) {
+// Keywords that signal the user wants a training plan (used in nutrition context)
+const TRAINING_INTENT_RE = /\b(training plan|workout plan|exercise plan|gym plan|training program|workout program|exercise program|build.{0,15}(training|workout|exercise|gym)|create.{0,15}(training|workout|exercise|gym)|make.{0,15}(training|workout|exercise|gym)|training routine|workout routine|lifting plan|split|hypertrophy|muscle.{0,10}program)\b/i
+
+function TrainingReferralCard() {
+  return (
+    <div className={styles.referralCard}>
+      <div className={styles.referralTop}>
+        <span className={styles.referralIcon}>🏋️</span>
+        <span className={styles.referralTitle}>Looking for a Training Plan?</span>
+      </div>
+      <p className={styles.referralText}>
+        Precision Training builds fully personalized workout programs — tailored to your body, goals and schedule. Same quality as your nutrition plan, delivered in minutes.
+      </p>
+      <a
+        href={TALLY_TRAINING}
+        target="_blank"
+        rel="noreferrer"
+        className={styles.referralBtn}
+      >
+        Get My Training Plan →
+      </a>
+    </div>
+  )
+}
+
+export default function AICoach({ slug, isNutrition }) {
+  const initialMessage = isNutrition
+    ? "Hey! I know your nutrition plan inside out. Ask me anything — meal swaps, your macro targets, supplement timing, or how to stay on track."
+    : "Hey! I know your plan inside out. Ask me anything — substitutions, technique tips, or how to get the most out of your program."
+
+  const chips = isNutrition
+    ? ['Can I swap a meal?', 'What are my daily macros?', 'When should I take supplements?']
+    : ['Can I substitute an exercise?', 'How much rest between sets?', 'What should I eat before training?']
+
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hey! I know your plan inside out. Ask me anything – substitutions, technique tips, or how to get the most out of your program.", time: now() }
+    { role: 'assistant', content: initialMessage, time: now() }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,7 +50,6 @@ export default function AICoach({ slug }) {
   })
   const bottomRef = useRef(null)
 
-  const chips = ['Can I substitute an exercise?', 'How much rest between sets?', 'What should I eat before training?']
   const remaining = DAILY_LIMIT - msgCount
   const limitReached = remaining <= 0
 
@@ -39,8 +71,14 @@ export default function AICoach({ slug }) {
     try { localStorage.setItem(STORAGE_KEY(slug), String(newCount)) } catch {}
 
     setMessages(prev => [...prev, { role: 'user', content: userMsg, time: now() }])
-    setLoading(true)
 
+    // ── Cross-sell: nutrition users asking for a training plan ──
+    if (isNutrition && TRAINING_INTENT_RE.test(userMsg)) {
+      setMessages(prev => [...prev, { role: 'assistant', content: '__TRAINING_REFERRAL__', time: now() }])
+      return
+    }
+
+    setLoading(true)
     const history = messages.map(m => ({ role: m.role, content: m.content }))
 
     try {
@@ -66,7 +104,9 @@ export default function AICoach({ slug }) {
         <span className={styles.icon}>💬</span>
         <div>
           <h2 className={styles.title}>Ask Your AI Coach</h2>
-          <p className={styles.sub}>Ask anything about your plan</p>
+          <p className={styles.sub}>
+            {isNutrition ? 'Ask anything about your nutrition plan' : 'Ask anything about your plan'}
+          </p>
         </div>
         <div className={styles.limitBadge} style={{ color: remaining <= 3 ? '#e05555' : 'var(--gold)' }}>
           {remaining}/{DAILY_LIMIT} left today
@@ -78,7 +118,10 @@ export default function AICoach({ slug }) {
           <div key={i} className={`${styles.msgWrap} ${m.role === 'user' ? styles.msgUser : styles.msgAi}`}>
             {m.role === 'assistant' && <div className={styles.avatar}>PT</div>}
             <div className={styles.msgInner}>
-              <div className={styles.bubble}>{m.content}</div>
+              {m.content === '__TRAINING_REFERRAL__'
+                ? <TrainingReferralCard />
+                : <div className={styles.bubble}>{m.content}</div>
+              }
               <div className={styles.time}>{m.time}</div>
             </div>
           </div>
@@ -115,7 +158,7 @@ export default function AICoach({ slug }) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
-            placeholder="Ask about your plan..."
+            placeholder={isNutrition ? 'Ask about your nutrition plan...' : 'Ask about your plan...'}
           />
           <button className={styles.sendBtn} onClick={() => send()}>→</button>
         </div>

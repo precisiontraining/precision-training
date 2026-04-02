@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import ProgressTracker from '../components/ProgressTracker'
+import MacroTracker from '../components/MacroTracker'
 import AICoach from '../components/AICoach'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, EXERCISE_GIF_URL, PLAN_CHAT_URL, DAYS } from '../constants'
 import styles from './PlanView.module.css'
@@ -231,6 +232,26 @@ function parseNutritionPlan(html) {
   return result
 }
 
+// ── EXTRACT DAILY MACRO TARGETS FROM PARSED NUTRITION PLAN ───────────────────
+function getDailyTargets(parsedPlan) {
+  if (!parsedPlan?.meals?.length) return null
+  let kcal = 0, protein = 0, carbs = 0, fats = 0
+  parsedPlan.meals.forEach(meal => {
+    if (!meal.totals) return
+    kcal    += parseFloat(meal.totals.kcal)    || 0
+    protein += parseFloat(meal.totals.protein) || 0
+    carbs   += parseFloat(meal.totals.carbs)   || 0
+    fats    += parseFloat(meal.totals.fats)    || 0
+  })
+  if (kcal === 0) return null
+  return {
+    kcal:    Math.round(kcal),
+    protein: Math.round(protein),
+    carbs:   Math.round(carbs),
+    fats:    Math.round(fats),
+  }
+}
+
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function PlanView() {
   const { slug } = useParams()
@@ -424,8 +445,12 @@ export default function PlanView() {
             : <TrainingView parsed={parsedPlan} images={images} getImage={getImage}
                 onSwap={openSwap} onAdd={openAdd} onRemove={name => setConfirmRemove(name)} />
         )}
-        {tab === 'tracker' && <ProgressTracker slug={slug} exercises={extractExercises(plan?.html_content)} />}
-        {tab === 'coach' && <AICoach slug={slug} />}
+        {tab === 'tracker' && (
+          isNutrition
+            ? <MacroTracker slug={slug} dailyTargets={getDailyTargets(parsedPlan)} />
+            : <ProgressTracker slug={slug} exercises={extractExercises(plan?.html_content)} />
+        )}
+        {tab === 'coach' && <AICoach slug={slug} isNutrition={isNutrition} />}
       </div>
 
       {/* SWAP MODAL */}

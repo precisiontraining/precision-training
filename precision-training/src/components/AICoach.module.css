@@ -159,3 +159,49 @@
 }
 
 .sendBtn:hover { background: var(--gold-light); }
+
+/* ── TRAINING REFERRAL CARD ── */
+.referralCard {
+  background: linear-gradient(135deg, rgba(200,169,110,0.08) 0%, rgba(200,169,110,0.03) 100%);
+  border: 1px solid rgba(200,169,110,0.3);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 100%;
+}
+
+.referralTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.referralIcon { font-size: 18px; }
+
+.referralTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.referralText {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 14px;
+}
+
+.referralBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--gold);
+  color: #000;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 13px;
+  font-family: var(--font);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.referralBtn:hover { background: var(--gold-light, #d4b97a); }

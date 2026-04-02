@@ -1,0 +1,321 @@
+.tracker {
+  padding: 32px 0;
+  position: relative;
+}
+
+/* ── DATE NAV ── */
+.dateNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.navBtn {
+  width: 36px;
+  height: 36px;
+  background: var(--card-bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--white);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+}
+
+.navBtn:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.navBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dateCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dateLabel {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.todayBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(200, 169, 110, 0.12);
+  border: 1px solid rgba(200, 169, 110, 0.25);
+  border-radius: 20px;
+  padding: 2px 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── SECTION LABEL ── */
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+/* ── PROGRESS BARS ── */
+.progressSection {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.macroRow {
+  margin-bottom: 14px;
+}
+
+.macroRow:last-child { margin-bottom: 0; }
+
+.macroMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.macroName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.macroVals {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.overTag {
+  font-size: 9px;
+  font-weight: 800;
+  background: rgba(200, 126, 110, 0.18);
+  color: #c87e6e;
+  border-radius: 4px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── INPUT SECTION ── */
+.inputSection {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.inputGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.unitTag {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.25);
+  text-transform: lowercase;
+  letter-spacing: 0;
+}
+
+.input {
+  background: var(--card-bg2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  transition: border-color 0.2s;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus { border-color: var(--gold); }
+.input::placeholder { color: rgba(255,255,255,0.18); font-weight: 400; }
+
+/* hide number input arrows */
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input[type=number] { -moz-appearance: textfield; }
+
+.saveBtn {
+  padding: 12px 28px;
+  background: var(--gold);
+  color: #000;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.saveBtn:hover { background: var(--gold-light, #d4b97a); }
+
+/* ── 7-DAY HISTORY ── */
+.historySection {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.historyGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  align-items: flex-end;
+  height: 100px;
+  margin-bottom: 8px;
+}
+
+.historyDay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  cursor: pointer;
+  height: 100%;
+  padding-bottom: 2px;
+}
+
+.historyBarWrap {
+  flex: 1;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  min-height: 20px;
+}
+
+.historyBarFill {
+  width: 100%;
+  background: var(--gold);
+  border-radius: 4px;
+  transition: height 0.3s ease;
+  min-height: 2px;
+}
+
+.historySelected .historyBarWrap {
+  border: 1px solid rgba(200, 169, 110, 0.4);
+}
+
+.historyDayLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+}
+
+.historySelected .historyDayLabel {
+  color: var(--gold);
+}
+
+.historyKcal {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.3);
+}
+
+.historyNote {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: #000;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  font-family: var(--font);
+  z-index: 999;
+  pointer-events: none;
+  animation: fadeUp 0.2s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@media (max-width: 500px) {
+  .inputGrid { grid-template-columns: 1fr 1fr; }
+  .historyKcal { display: none; }
+}
