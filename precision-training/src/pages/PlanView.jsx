@@ -8,74 +8,156 @@ import styles from './PlanView.module.css'
 const HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' }
 
 // ── PARSE AI HTML → STRUCTURED DATA ──────────────────────────────────────────
+
+// Detects if a heading text looks like a training day
+function isDayHeading(text) {
+  const t = text.toLowerCase().trim()
+  // "Monday", "Tuesday" etc.
+  if (DAYS.some(d => t.includes(d.toLowerCase()))) return true
+  // "Day 1", "Day 2 – Upper Body" etc.
+  if (/^day\s*\d+/i.test(t)) return true
+  // "Workout", "Workout 1", "Workout A", "Session 1", "Training Day"
+  if (/^(workout|session|training)(\s|$)/i.test(t)) return true
+  // "Upper Body", "Lower Body", "Push Day", "Pull Day", "Leg Day" etc.
+  if (/\b(upper|lower|push|pull|leg|chest|back|shoulder|arm|full.?body|cardio|core|glute|hamstring)\b/i.test(t)) return true
+  return false
+}
+
+// Given an element, find the nearest heading walking up + back through the DOM
+function findNearestHeading(el) {
+  // 1. Walk backwards through siblings
+  let prev = el.previousElementSibling
+  while (prev) {
+    if (/^h[1-6]$/i.test(prev.tagName)) return prev.textContent.trim()
+    // If sibling is a container, check its LAST heading child
+    const inner = prev.querySelector('h1,h2,h3,h4,h5,h6')
+    if (inner) return inner.textContent.trim()
+    prev = prev.previousElementSibling
+  }
+  // 2. Walk up to parent and try again
+  const parent = el.parentElement
+  if (parent && parent !== document.body) {
+    // Check headings inside parent before this element
+    const siblings = [...parent.children]
+    const idx = siblings.indexOf(el)
+    for (let i = idx - 1; i >= 0; i--) {
+      const s = siblings[i]
+      if (/^h[1-6]$/i.test(s.tagName)) return s.textContent.trim()
+      const inner = s.querySelector('h1,h2,h3,h4,h5,h6')
+      if (inner) return inner.textContent.trim()
+    }
+    return findNearestHeading(parent)
+  }
+  return null
+}
+
+// Detects if a table is a non-exercise table (weekly split, progression, recovery etc.)
+function isNonExerciseTable(table) {
+  const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase().trim())
+  const text = table.textContent.toLowerCase()
+  // Progressive overload / weekly tables: has "week" column
+  if (headers.some(h => h.includes('week'))) return true
+  // Weekly split tables: has "day" and "muscle" or "focus" columns
+  if (headers.some(h => h.includes('day')) && headers.some(h => h.includes('muscle') || h.includes('focus') || h.includes('group'))) return true
+  // Recovery / sleep tables
+  if (text.includes('sleep') || text.includes('recovery') || text.includes('deload')) return true
+  // Very few rows = likely a summary table, not exercise list
+  const rows = [...table.querySelectorAll('tbody tr')]
+  if (rows.length <= 2 && !headers.some(h => h.includes('exercise'))) return true
+  return false
+}
+
 function parseTrainingPlan(html) {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
   const result = { meta: {}, days: [], extras: [] }
 
-  // Extract meta info from first table (weekly split)
   const allTables = [...doc.querySelectorAll('table')]
-  
-  // Find day sections by looking for headings + tables
-  const body = doc.body
-  const elements = [...body.querySelectorAll('h1,h2,h3,h4,h5,table,p,ul,li')]
 
+  // Helper: clean a raw heading into a display title
+  function cleanTitle(raw) {
+    return raw
+      .replace(/^day\s*\d+\s*[-–:]+\s*/i, '')    // "Day 1 – Upper Body" → "Upper Body"
+      .replace(/^workout\s*\d*\s*[-–:]+\s*/i, '') // "Workout 1 – Push" → "Push"
+      .replace(/^session\s*\d*\s*[-–:]+\s*/i, '') // "Session 1 – Legs" → "Legs"
+      .trim() || raw.trim()
+  }
+
+  // ── Pass 1: scan all headings + tables in document order ──
+  const elements = [...doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,table')]
   let currentDay = null
-  let inDailySection = false
 
   elements.forEach(el => {
     const tag = el.tagName.toLowerCase()
     const text = el.textContent.trim()
 
-    if ((tag === 'h2' || tag === 'h3') && DAYS.some(d => text.toLowerCase().includes(d.toLowerCase()))) {
-      currentDay = { title: text, exercises: [] }
-      result.days.push(currentDay)
-      inDailySection = true
+    if (/^h[1-6]$/.test(tag)) {
+      if (isDayHeading(text)) {
+        const title = cleanTitle(text)
+        currentDay = { title, exercises: [] }
+        result.days.push(currentDay)
+      } else if (/progress|recover|sleep|nutrition|warm.?up|cool.?down|guideline|protocol|overview|split/i.test(text)) {
+        currentDay = null
+      }
       return
     }
 
     if (tag === 'table' && currentDay) {
+      if (isNonExerciseTable(el)) return
       const headers = [...el.querySelectorAll('th')].map(h => h.textContent.toLowerCase().trim())
-      const isExTable = headers.some(h => h.includes('set') || h.includes('rep') || h.includes('exercise'))
+      const isExTable = headers.some(h => h.includes('exercise') || h.includes('set') || h.includes('rep'))
       if (!isExTable) return
       el.querySelectorAll('tbody tr').forEach(row => {
         const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
-        if (!cells[0] || cells[0].toLowerCase() === 'total') return
-        currentDay.exercises.push({
-          name: cells[0],
-          sets: cells[1] || '',
-          reps: cells[2] || '',
-          rest: cells[3] || '',
-          notes: cells[4] || '',
-        })
+        if (!cells[0]) return
+        if (/^(total|warm.?up|cool.?down|stretch|mobility)/i.test(cells[0])) return
+        currentDay.exercises.push({ name: cells[0], sets: cells[1]||'', reps: cells[2]||'', rest: cells[3]||'', notes: cells[4]||'' })
       })
     }
   })
 
-  // If no days found, try different structure (tables only)
+  // ── Pass 2: fallback — use findNearestHeading for each exercise table ──
   if (result.days.length === 0) {
     allTables.forEach(table => {
-      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-      const isExTable = headers.some(h => h.includes('set') || h.includes('rep'))
+      if (isNonExerciseTable(table)) return
+      const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase().trim())
+      const isExTable = headers.some(h => h.includes('exercise') || h.includes('set') || h.includes('rep'))
       if (!isExTable) return
-      
-      // Find preceding heading
-      let prev = table.previousElementSibling
-      let dayTitle = 'Workout'
-      while (prev) {
-        if (/h[1-6]/i.test(prev.tagName)) { dayTitle = prev.textContent.trim(); break }
-        prev = prev.previousElementSibling
-      }
 
-      const day = { title: dayTitle, exercises: [] }
+      const rawHeading = findNearestHeading(table)
+      if (!rawHeading) return
+      if (/progress|recover|sleep|nutrition|overview|split|guideline|protocol/i.test(rawHeading)) return
+
+      const title = cleanTitle(rawHeading)
+      const exercises = []
       table.querySelectorAll('tbody tr').forEach(row => {
         const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
-        if (!cells[0] || /^total/i.test(cells[0])) return
-        day.exercises.push({ name: cells[0], sets: cells[1]||'', reps: cells[2]||'', rest: cells[3]||'', notes: cells[4]||'' })
+        if (!cells[0]) return
+        if (/^(total|warm.?up|cool.?down|stretch|mobility)/i.test(cells[0])) return
+        exercises.push({ name: cells[0], sets: cells[1]||'', reps: cells[2]||'', rest: cells[3]||'', notes: cells[4]||'' })
       })
-      if (day.exercises.length > 0) result.days.push(day)
+      if (exercises.length === 0) return
+
+      // Merge into existing day with same title, or create new
+      const existing = result.days.find(d => d.title === title)
+      if (existing) {
+        existing.exercises.push(...exercises)
+      } else {
+        result.days.push({ title, exercises })
+      }
     })
   }
+
+  // ── Number duplicate titles (e.g. 3× "Workout" → "Workout 1/2/3") ──
+  const titleCount = {}
+  result.days.forEach(d => { titleCount[d.title] = (titleCount[d.title] || 0) + 1 })
+  const titleSeen = {}
+  result.days.forEach(d => {
+    if (titleCount[d.title] > 1) {
+      titleSeen[d.title] = (titleSeen[d.title] || 0) + 1
+      d.title = d.title + ' ' + titleSeen[d.title]
+    }
+  })
 
   return result
 }
@@ -473,12 +555,16 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
       {/* Day selector */}
       <div className={styles.dayTabs}>
         {days.map((d, i) => {
-          const dayName = d.title.split(/[-–]/)[0].trim().split(' ').slice(-1)[0]
+          // Title is already cleaned by parser (e.g. "Upper Body", "Push Day", "Chest & Triceps")
+          // For tab label: use first 2 words max to keep tabs compact
+          const words = d.title.split(' ')
+          const label = words.length > 2 ? words[0] + ' ' + words[1] : d.title
+          const sub = words.length > 2 ? words.slice(2).join(' ') : ''
           return (
             <button key={i} className={`${styles.dayTab} ${activeDay === i ? styles.dayTabActive : ''}`}
               onClick={() => setActiveDay(i)}>
-              <span className={styles.dayTabLabel}>{dayName}</span>
-              <span className={styles.dayTabSub}>{d.title.includes('-') || d.title.includes('–') ? d.title.split(/[-–]/)[1]?.trim() : ''}</span>
+              <span className={styles.dayTabLabel}>{label}</span>
+              {sub && <span className={styles.dayTabSub}>{sub}</span>}
             </button>
           )
         })}
