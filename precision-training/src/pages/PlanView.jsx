@@ -83,7 +83,17 @@ function parseTrainingPlan(html) {
 function parseNutritionPlan(html) {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
-  const result = { meals: [], totals: null }
+  const result = { intro: '', meals: [], totals: null }
+
+  // Extract coaching intro — dark card before first meal
+  const allEls = [...doc.body.children]
+  for (const el of allEls) {
+    const txt = el.textContent.trim()
+    if (txt.length > 80 && !el.querySelector('table') && !el.querySelector('h1')) {
+      result.intro = txt
+      break
+    }
+  }
 
   const allTables = [...doc.querySelectorAll('table')]
   allTables.forEach(table => {
@@ -93,9 +103,33 @@ function parseNutritionPlan(html) {
 
     let prev = table.previousElementSibling
     let mealTitle = 'Meal'
+    let purposeNote = ''
+    let swaps = []
     while (prev) {
       if (/h[1-6]/i.test(prev.tagName)) { mealTitle = prev.textContent.trim(); break }
+      // coaching note: italic/p element right after heading
+      if (prev.tagName === 'P' && !purposeNote) {
+        const txt = prev.textContent.trim()
+        if (txt.length > 10 && txt.length < 300) purposeNote = txt
+      }
       prev = prev.previousElementSibling
+    }
+    // swap options: look in next siblings after table
+    let next = table.nextElementSibling
+    while (next) {
+      const txt = next.textContent.toLowerCase()
+      if (txt.includes('swap') || txt.includes('alternative') || txt.includes('instead')) {
+        const items = next.querySelectorAll('li')
+        if (items.length > 0) {
+          swaps = [...items].map(li => li.textContent.trim()).filter(Boolean)
+        } else {
+          const raw = next.textContent.replace(/swap options?:?|alternatives?:?/gi, '').trim()
+          if (raw.length > 4) swaps = raw.split(/[,\n•·]/).map(s => s.trim()).filter(Boolean)
+        }
+        break
+      }
+      if (/h[1-6]/i.test(next.tagName)) break
+      next = next.nextElementSibling
     }
 
     const items = []
@@ -109,7 +143,7 @@ function parseNutritionPlan(html) {
       }
       items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
     })
-    if (items.length > 0) result.meals.push({ title: mealTitle, items, totals })
+    if (items.length > 0) result.meals.push({ title: mealTitle, purposeNote, swaps, items, totals })
   })
 
   return result
@@ -508,24 +542,55 @@ function NutritionView({ parsed }) {
 
   const meal = meals[activeMeal]
 
+  // Tab label: use the contextual name (Breakfast / Pre-Workout etc.)
+  // Strip any leading "Meal X –" or "Meal X:" prefix if AI still added it
+  function shortLabel(title) {
+    const clean = title.replace(/^meal\s*\d*\s*[-–:]*\s*/i, '').trim()
+    return clean.split(/[-–:]/)[0].trim() || title
+  }
+
   return (
     <div className={styles.trainingView}>
+      {/* Coaching intro */}
+      {parsed.intro && (
+        <div className={styles.coachingIntro}>
+          <div className={styles.coachingIntroIcon}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <p className={styles.coachingIntroText}>{parsed.intro}</p>
+        </div>
+      )}
+
+      {/* Meal tabs */}
       <div className={styles.dayTabs}>
         {meals.map((m, i) => (
           <button key={i} className={`${styles.dayTab} ${activeMeal === i ? styles.dayTabActive : ''}`}
             onClick={() => setActiveMeal(i)}>
-            <span className={styles.dayTabLabel}>{m.title.replace(/meal\s*/i, 'Meal ').split(':')[0]}</span>
-            <span className={styles.dayTabSub}>{m.title.includes(':') ? m.title.split(':')[1]?.trim() : ''}</span>
+            <span className={styles.dayTabLabel}>{shortLabel(m.title)}</span>
           </button>
         ))}
       </div>
 
       <div className={styles.dayContent}>
+        {/* Meal header */}
         <div className={styles.dayHeader}>
           <h2 className={styles.dayTitle}>{meal.title}</h2>
           <span className={styles.dayCount}>{meal.items.length} items</span>
         </div>
 
+        {/* Coaching purpose note */}
+        {meal.purposeNote && (
+          <div className={styles.mealPurpose}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,marginTop:1}}>
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span>{meal.purposeNote}</span>
+          </div>
+        )}
+
+        {/* Food items */}
         <div className={styles.nutritionList}>
           {meal.items.map((item, i) => (
             <div key={i} className={styles.nutritionCard}>
@@ -544,15 +609,56 @@ function NutritionView({ parsed }) {
           ))}
         </div>
 
+        {/* Meal total — clearly separated from food items */}
         {meal.totals && (
-          <div className={styles.mealTotals}>
-            <span className={styles.totalsLabel}>Meal Total</span>
-            <div className={styles.totalsMeta}>
-              {meal.totals.kcal && <span className={styles.totalTag}><span>kcal</span>{meal.totals.kcal}</span>}
-              {meal.totals.protein && <span className={styles.totalTag}><span>Protein</span>{meal.totals.protein}</span>}
-              {meal.totals.carbs && <span className={styles.totalTag}><span>Carbs</span>{meal.totals.carbs}</span>}
-              {meal.totals.fats && <span className={styles.totalTag}><span>Fats</span>{meal.totals.fats}</span>}
+          <div className={styles.mealTotalBar}>
+            <div className={styles.mealTotalLeft}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              <span>Meal Total</span>
             </div>
+            <div className={styles.mealTotalMacros}>
+              {meal.totals.kcal && (
+                <div className={styles.mealTotalMacro}>
+                  <span className={styles.mealTotalVal}>{meal.totals.kcal}</span>
+                  <span className={styles.mealTotalKey}>kcal</span>
+                </div>
+              )}
+              {meal.totals.protein && (
+                <div className={styles.mealTotalMacro}>
+                  <span className={styles.mealTotalVal}>{meal.totals.protein}</span>
+                  <span className={styles.mealTotalKey}>protein</span>
+                </div>
+              )}
+              {meal.totals.carbs && (
+                <div className={styles.mealTotalMacro}>
+                  <span className={styles.mealTotalVal}>{meal.totals.carbs}</span>
+                  <span className={styles.mealTotalKey}>carbs</span>
+                </div>
+              )}
+              {meal.totals.fats && (
+                <div className={styles.mealTotalMacro}>
+                  <span className={styles.mealTotalVal}>{meal.totals.fats}</span>
+                  <span className={styles.mealTotalKey}>fats</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Swap options */}
+        {meal.swaps && meal.swaps.length > 0 && (
+          <div className={styles.swapOptions}>
+            <div className={styles.swapOptionsHeader}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+              </svg>
+              Swap Options
+            </div>
+            <ul className={styles.swapList}>
+              {meal.swaps.map((s, i) => <li key={i}>{s}</li>)}
+            </ul>
           </div>
         )}
       </div>
