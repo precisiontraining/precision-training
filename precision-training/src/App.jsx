@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import Home from './pages/Home'
 import PlanView from './pages/PlanView'
 import Impressum from './pages/Impressum'
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/privacy" element={<Privacy />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   )
 }

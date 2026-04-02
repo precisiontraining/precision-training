@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import HeroScroll from '../components/HeroScroll'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, TALLY_TRAINING, TALLY_NUTRITION } from '../constants'
@@ -88,37 +89,8 @@ export default function Home() {
     <div className={styles.page}>
       <Navbar />
 
-      {/* ── HERO ──────────────────────────────────────── */}
-      <section className={styles.hero}>
-        <div className={styles.heroGlow} />
-        <div className={styles.heroContent}>
-          <div className={styles.logoWrap}>
-            <div className={styles.logoHalo} />
-            <img src="/logo.png" alt="Precision Training" className={styles.heroLogo} />
-          </div>
-          <h1 className={styles.heroTitle}>
-            <span>Your Body.</span>
-            <span>Your System.</span>
-            <span className={styles.heroGold}>Your Results.</span>
-          </h1>
-          <p className={styles.heroSub}>
-            A fully personalized plan built around your body, schedule and goals —
-            delivered to your inbox within minutes.
-          </p>
-          <div className={styles.heroBtns}>
-            <a href={TALLY_TRAINING} target="_blank" rel="noreferrer" className={styles.btnPrimary}>
-              Get My Training Plan →
-            </a>
-            <a href={TALLY_NUTRITION} target="_blank" rel="noreferrer" className={styles.btnSecondary}>
-              Get My Nutrition Plan →
-            </a>
-          </div>
-          <p className={styles.pricingBadge}>Currently free · normally €12 per plan</p>
-        </div>
-        <div className={styles.scrollCue}>
-          <div className={styles.scrollDot} />
-        </div>
-      </section>
+      {/* ── SCROLL HERO ──────────────────────────────────── */}
+      <HeroScroll tallyTraining={TALLY_TRAINING} tallyNutrition={TALLY_NUTRITION} />
 
       {/* ── STATS BAR ─────────────────────────────────── */}
       <div className={styles.statsBar}>

@@ -10,7 +10,7 @@ export default function Privacy() {
         <p className={styles.updated}>Last updated: 03.03.2026</p>
 
         <h2>1. General Information</h2>
-        <p>This Privacy Policy explains how Precision Training ("we", "us", "our") collects, uses, and protects your personal data when you purchase and use our digital fitness products. We are committed to protecting your privacy and handling your data responsibly and transparently.</p>
+        <p>This Privacy Policy explains how Precision Training ("we", "us", "our") collects, uses, and protects your personal data when you purchase and use our digital fitness products available at <a href="https://www.precision-training.io">www.precision-training.io</a>. We are committed to protecting your privacy and handling your data responsibly and transparently.</p>
 
         <h2>2. Data We Collect</h2>
         <p>When you purchase a product or fill out a form, we may collect: Full name, Email address, Age, Gender, Height and weight, Training frequency, Activity level, Nutrition preferences, Food exclusions, and any additional information you voluntarily provide.</p>
@@ -37,6 +37,7 @@ export default function Privacy() {
 
         <h2>9. Contact</h2>
         <p>Precision Training<br />
+        Website: <a href="https://www.precision-training.io">www.precision-training.io</a><br />
         Email: <a href="mailto:precisiontraining930@gmail.com">precisiontraining930@gmail.com</a></p>
       </div>
     </div>
