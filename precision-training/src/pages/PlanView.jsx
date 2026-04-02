@@ -197,6 +197,9 @@ function parseNutritionPlan(html) {
       }
       prev = prev.previousElementSibling
     }
+    // Skip summary / daily totals tables
+    if (/daily total|total summary|nutrition summary|daily summary|^total$|overview/i.test(mealTitle)) return
+
     // swap options: look in next siblings after table
     let next = table.nextElementSibling
     while (next) {
@@ -224,8 +227,13 @@ function parseNutritionPlan(html) {
         totals = { kcal: cells[2]||cells[1]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' }
         return
       }
+      // Skip daily totals rows that ended up inside a meal table
+      if (/^daily/i.test(cells[0])) return
       items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
     })
+    // Skip if no real food items or if this looks like a summary table
+    if (items.length === 0) return
+    if (mealTitle === 'Meal' && items.some(i => /daily|total|summary/i.test(i.food))) return
     if (items.length > 0) result.meals.push({ title: mealTitle, purposeNote, swaps, items, totals })
   })
 
