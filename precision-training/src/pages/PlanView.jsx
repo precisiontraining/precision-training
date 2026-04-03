@@ -166,9 +166,9 @@ function parseTrainingPlan(html) {
 function parseNutritionPlan(html) {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
-  const result = { intro: '', meals: [], totals: null }
+  const result = { intro: '', meals: [] }
 
-  // Extract coaching intro — dark card before first meal
+  // Extract coaching intro
   const allEls = [...doc.body.children]
   for (const el of allEls) {
     const txt = el.textContent.trim()
@@ -178,78 +178,103 @@ function parseNutritionPlan(html) {
     }
   }
 
-  const allTables = [...doc.querySelectorAll('table')]
-  allTables.forEach(table => {
-    const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-    const isMealTable = headers.some(h => h.includes('food') || h.includes('calor') || h.includes('protein') || h.includes('amount'))
-    if (!isMealTable) return
+  // Walk all elements in order to build meal + option structure
+  const elements = [...doc.body.querySelectorAll('h1,h2,h3,h4,h5,h6,table,p')]
+  let currentMeal = null
+  let currentOption = null
 
-    let prev = table.previousElementSibling
-    let mealTitle = 'Meal'
-    let purposeNote = ''
-    let swaps = []
-    while (prev) {
-      if (/h[1-6]/i.test(prev.tagName)) { mealTitle = prev.textContent.trim(); break }
-      // coaching note: italic/p element right after heading
-      if (prev.tagName === 'P' && !purposeNote) {
-        const txt = prev.textContent.trim()
-        if (txt.length > 10 && txt.length < 300) purposeNote = txt
-      }
-      prev = prev.previousElementSibling
+  function isMealHeading(text) {
+    return /breakfast|lunch|dinner|snack|pre.?workout|post.?workout|meal\s*\d/i.test(text)
+  }
+  function isOptionHeading(text) {
+    return /option\s*[abc1-3]|simple|standard|exciting|quick|classic|advanced|variation/i.test(text)
+  }
+  function isSummaryHeading(text) {
+    return /daily total|nutrition summary|total summary|daily summary|overview/i.test(text)
+  }
+
+  function saveOption() {
+    if (currentOption && currentOption.items.length > 0 && currentMeal) {
+      currentMeal.options.push(currentOption)
     }
-    // Skip summary / daily totals tables
-    if (/daily total|total summary|nutrition summary|daily summary|^total$|overview/i.test(mealTitle)) return
-
-    // swap options: look in next siblings after table
-    let next = table.nextElementSibling
-    while (next) {
-      const txt = next.textContent.toLowerCase()
-      if (txt.includes('swap') || txt.includes('alternative') || txt.includes('instead')) {
-        const items = next.querySelectorAll('li')
-        if (items.length > 0) {
-          swaps = [...items].map(li => li.textContent.trim()).filter(Boolean)
-        } else {
-          const raw = next.textContent.replace(/swap options?:?|alternatives?:?/gi, '').trim()
-          if (raw.length > 4) swaps = raw.split(/[,\n•·]/).map(s => s.trim()).filter(Boolean)
-        }
-        break
-      }
-      if (/h[1-6]/i.test(next.tagName)) break
-      next = next.nextElementSibling
+    currentOption = null
+  }
+  function saveMeal() {
+    saveOption()
+    if (currentMeal && currentMeal.options.length > 0) {
+      result.meals.push(currentMeal)
     }
+    currentMeal = null
+  }
 
-    const items = []
-    let totals = null
-    table.querySelectorAll('tbody tr, tfoot tr').forEach(row => {
-      const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
-      if (!cells[0]) return
-      if (/^total/i.test(cells[0])) {
-        totals = { kcal: cells[2]||cells[1]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' }
+  elements.forEach(el => {
+    const tag = el.tagName.toLowerCase()
+    const text = el.textContent.trim()
+
+    if (/^h[1-6]$/.test(tag)) {
+      if (isSummaryHeading(text)) { saveMeal(); return }
+
+      if (isMealHeading(text) && !isOptionHeading(text)) {
+        saveMeal()
+        const cleanTitle = text.replace(/^meal\s*\d+\s*[-\u2013:]+\s*/i, '').trim() || text
+        currentMeal = { title: cleanTitle, purposeNote: '', options: [] }
         return
       }
-      // Skip daily totals rows that ended up inside a meal table
-      if (/^daily/i.test(cells[0])) return
-      items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
-    })
-    // Skip if no real food items or if this looks like a summary table
-    if (items.length === 0) return
-    if (mealTitle === 'Meal' && items.some(i => /daily|total|summary/i.test(i.food))) return
-    if (items.length > 0) result.meals.push({ title: mealTitle, purposeNote, swaps, items, totals })
+
+      if (isOptionHeading(text) && currentMeal) {
+        saveOption()
+        const labelMatch = text.match(/option\s*[abc1-3]\s*[-\u2013:]+\s*(.+)/i)
+        const label = labelMatch ? labelMatch[1].trim() : text.replace(/^option\s*[abc1-3]\s*/i, '').trim() || text
+        currentOption = { label, items: [], totals: null }
+        return
+      }
+      return
+    }
+
+    if (tag === 'p' && currentMeal && !currentOption) {
+      if (text.length > 10 && text.length < 300) currentMeal.purposeNote = text
+      return
+    }
+
+    if (tag === 'table') {
+      const headers = [...el.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+      const isMealTable = headers.some(h => h.includes('food') || h.includes('calor') || h.includes('protein') || h.includes('amount'))
+      if (!isMealTable || !currentMeal) return
+
+      if (!currentOption) {
+        currentOption = { label: 'Option A', items: [], totals: null }
+      }
+
+      el.querySelectorAll('tbody tr, tfoot tr').forEach(row => {
+        const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
+        if (!cells[0]) return
+        if (/^total/i.test(cells[0])) {
+          currentOption.totals = { kcal: cells[2]||cells[1]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' }
+          return
+        }
+        if (/^daily/i.test(cells[0])) return
+        currentOption.items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
+      })
+    }
   })
 
+  saveMeal()
   return result
 }
+
 
 // ── EXTRACT DAILY MACRO TARGETS FROM PARSED NUTRITION PLAN ───────────────────
 function getDailyTargets(parsedPlan) {
   if (!parsedPlan?.meals?.length) return null
   let kcal = 0, protein = 0, carbs = 0, fats = 0
   parsedPlan.meals.forEach(meal => {
-    if (!meal.totals) return
-    kcal    += parseFloat(meal.totals.kcal)    || 0
-    protein += parseFloat(meal.totals.protein) || 0
-    carbs   += parseFloat(meal.totals.carbs)   || 0
-    fats    += parseFloat(meal.totals.fats)    || 0
+    // Use first option only to avoid multiplying by number of options
+    const totals = meal.options?.[0]?.totals || meal.totals
+    if (!totals) return
+    kcal    += parseFloat(totals.kcal)    || 0
+    protein += parseFloat(totals.protein) || 0
+    carbs   += parseFloat(totals.carbs)   || 0
+    fats    += parseFloat(totals.fats)    || 0
   })
   if (kcal === 0) return null
   return {
@@ -656,21 +681,24 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
 // ── NUTRITION VIEW ────────────────────────────────────────────────────────────
 function NutritionView({ parsed }) {
   const [activeMeal, setActiveMeal] = useState(0)
+  const [activeOption, setActiveOption] = useState(0)
   const meals = parsed.meals || []
   if (!meals.length) return <div className={styles.empty}>No nutrition data found in this plan.</div>
 
   const meal = meals[activeMeal]
+  const options = meal.options || []
+  const option = options[Math.min(activeOption, options.length - 1)] || options[0]
 
-  // Tab label: use the contextual name (Breakfast / Pre-Workout etc.)
-  // Strip any leading "Meal X –" or "Meal X:" prefix if AI still added it
   function shortLabel(title) {
-    const clean = title.replace(/^meal\s*\d*\s*[-–:]*\s*/i, '').trim()
-    return clean.split(/[-–:]/)[0].trim() || title
+    const clean = title.replace(/^meal\s*\d*\s*[-\u2013:]*\s*/i, '').trim()
+    return clean.split(/[-\u2013:]/)[0].trim() || title
   }
+
+  const OPTION_COLORS = ['#c8a96e', '#6e9dc8', '#7ec87e']
+  const OPTION_BG    = ['rgba(200,169,110,0.12)', 'rgba(110,157,200,0.12)', 'rgba(126,200,126,0.12)']
 
   return (
     <div className={styles.trainingView}>
-      {/* Coaching intro */}
       {parsed.intro && (
         <div className={styles.coachingIntro}>
           <div className={styles.coachingIntroIcon}>
@@ -685,8 +713,9 @@ function NutritionView({ parsed }) {
       {/* Meal tabs */}
       <div className={styles.dayTabs}>
         {meals.map((m, i) => (
-          <button key={i} className={`${styles.dayTab} ${activeMeal === i ? styles.dayTabActive : ''}`}
-            onClick={() => setActiveMeal(i)}>
+          <button key={i}
+            className={`${styles.dayTab} ${activeMeal === i ? styles.dayTabActive : ''}`}
+            onClick={() => { setActiveMeal(i); setActiveOption(0) }}>
             <span className={styles.dayTabLabel}>{shortLabel(m.title)}</span>
           </button>
         ))}
@@ -696,10 +725,9 @@ function NutritionView({ parsed }) {
         {/* Meal header */}
         <div className={styles.dayHeader}>
           <h2 className={styles.dayTitle}>{meal.title}</h2>
-          <span className={styles.dayCount}>{meal.items.length} items</span>
+          {option && <span className={styles.dayCount}>{option.items.length} items</span>}
         </div>
 
-        {/* Coaching purpose note */}
         {meal.purposeNote && (
           <div className={styles.mealPurpose}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0,marginTop:1}}>
@@ -709,76 +737,65 @@ function NutritionView({ parsed }) {
           </div>
         )}
 
-        {/* Food items */}
-        <div className={styles.nutritionList}>
-          {meal.items.map((item, i) => (
-            <div key={i} className={styles.nutritionCard}>
-              <div className={styles.nutritionNum}>{String(i + 1).padStart(2, '0')}</div>
-              <div className={styles.nutritionInfo}>
-                <div className={styles.exerciseName}>{item.food}</div>
-                <div className={styles.exerciseMeta}>
-                  {item.amount && <span className={styles.metaTag}><span className={styles.metaKey}>Amount</span>{item.amount}</span>}
-                  {item.kcal && <span className={styles.metaTag}><span className={styles.metaKey}>kcal</span>{item.kcal}</span>}
-                  {item.protein && <span className={styles.metaTag}><span className={styles.metaKey}>Protein</span>{item.protein}</span>}
-                  {item.carbs && <span className={styles.metaTag}><span className={styles.metaKey}>Carbs</span>{item.carbs}</span>}
-                  {item.fats && <span className={styles.metaTag}><span className={styles.metaKey}>Fats</span>{item.fats}</span>}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Meal total — clearly separated from food items */}
-        {meal.totals && (
-          <div className={styles.mealTotalBar}>
-            <div className={styles.mealTotalLeft}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-              </svg>
-              <span>Meal Total</span>
-            </div>
-            <div className={styles.mealTotalMacros}>
-              {meal.totals.kcal && (
-                <div className={styles.mealTotalMacro}>
-                  <span className={styles.mealTotalVal}>{meal.totals.kcal}</span>
-                  <span className={styles.mealTotalKey}>kcal</span>
-                </div>
-              )}
-              {meal.totals.protein && (
-                <div className={styles.mealTotalMacro}>
-                  <span className={styles.mealTotalVal}>{meal.totals.protein}</span>
-                  <span className={styles.mealTotalKey}>protein</span>
-                </div>
-              )}
-              {meal.totals.carbs && (
-                <div className={styles.mealTotalMacro}>
-                  <span className={styles.mealTotalVal}>{meal.totals.carbs}</span>
-                  <span className={styles.mealTotalKey}>carbs</span>
-                </div>
-              )}
-              {meal.totals.fats && (
-                <div className={styles.mealTotalMacro}>
-                  <span className={styles.mealTotalVal}>{meal.totals.fats}</span>
-                  <span className={styles.mealTotalKey}>fats</span>
-                </div>
-              )}
+        {/* Option selector */}
+        {options.length > 1 && (
+          <div className={styles.optionRow}>
+            <span className={styles.optionLabel}>Choose your option:</span>
+            <div className={styles.optionBtns}>
+              {options.map((opt, i) => (
+                <button key={i}
+                  className={styles.optionBtn}
+                  style={{
+                    borderColor: activeOption === i ? OPTION_COLORS[i % OPTION_COLORS.length] : 'var(--border)',
+                    background:  activeOption === i ? OPTION_BG[i % OPTION_BG.length] : 'transparent',
+                    color:       activeOption === i ? OPTION_COLORS[i % OPTION_COLORS.length] : 'var(--gray)',
+                  }}
+                  onClick={() => setActiveOption(i)}>
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Swap options */}
-        {meal.swaps && meal.swaps.length > 0 && (
-          <div className={styles.swapOptions}>
-            <div className={styles.swapOptionsHeader}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-              </svg>
-              Swap Options
+        {/* Food items */}
+        {option && (
+          <>
+            <div className={styles.nutritionList}>
+              {option.items.map((item, i) => (
+                <div key={i} className={styles.nutritionCard}>
+                  <div className={styles.nutritionNum}>{String(i + 1).padStart(2, '0')}</div>
+                  <div className={styles.nutritionInfo}>
+                    <div className={styles.exerciseName}>{item.food}</div>
+                    <div className={styles.exerciseMeta}>
+                      {item.amount && <span className={styles.metaTag}><span className={styles.metaKey}>Amount</span>{item.amount}</span>}
+                      {item.kcal && <span className={styles.metaTag}><span className={styles.metaKey}>kcal</span>{item.kcal}</span>}
+                      {item.protein && <span className={styles.metaTag}><span className={styles.metaKey}>Protein</span>{item.protein}</span>}
+                      {item.carbs && <span className={styles.metaTag}><span className={styles.metaKey}>Carbs</span>{item.carbs}</span>}
+                      {item.fats && <span className={styles.metaTag}><span className={styles.metaKey}>Fats</span>{item.fats}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <ul className={styles.swapList}>
-              {meal.swaps.map((s, i) => <li key={i}>{s}</li>)}
-            </ul>
-          </div>
+
+            {option.totals && (
+              <div className={styles.mealTotalBar}>
+                <div className={styles.mealTotalLeft}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  <span>Meal Total</span>
+                </div>
+                <div className={styles.mealTotalMacros}>
+                  {option.totals.kcal && <div className={styles.mealTotalMacro}><span className={styles.mealTotalVal}>{option.totals.kcal}</span><span className={styles.mealTotalKey}>kcal</span></div>}
+                  {option.totals.protein && <div className={styles.mealTotalMacro}><span className={styles.mealTotalVal}>{option.totals.protein}</span><span className={styles.mealTotalKey}>protein</span></div>}
+                  {option.totals.carbs && <div className={styles.mealTotalMacro}><span className={styles.mealTotalVal}>{option.totals.carbs}</span><span className={styles.mealTotalKey}>carbs</span></div>}
+                  {option.totals.fats && <div className={styles.mealTotalMacro}><span className={styles.mealTotalVal}>{option.totals.fats}</span><span className={styles.mealTotalKey}>fats</span></div>}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
