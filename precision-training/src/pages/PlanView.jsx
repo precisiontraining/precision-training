@@ -242,47 +242,70 @@ function parseNutritionPlan(html) {
     if (tag === 'table') {
       if (!currentMeal) return
 
-      // Detect meal table — check th headers OR first row td content
-      const thHeaders = [...el.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-      const firstRowTds = [...el.querySelectorAll('tr:first-child td')].map(c => c.textContent.toLowerCase())
-      const allHeaders = [...thHeaders, ...firstRowTds]
-      const isMealTable = allHeaders.some(h =>
-        h.includes('food') || h.includes('calor') || h.includes('protein') ||
-        h.includes('amount') || h.includes('carb') || h.includes('fat')
-      )
-      // Also accept tables with no headers at all if inside a meal context (model skipped headers)
-      const hasNoHeaders = thHeaders.length === 0
-      const looksLikeFoodTable = hasNoHeaders && el.querySelectorAll('tr').length >= 2
+      // ── Detect column positions dynamically from thead ──
+      const thCells = [...el.querySelectorAll('thead th, thead td')]
+      const firstTrTds = [...el.querySelectorAll('tr:first-child td')]
+      const headerCells = thCells.length > 0 ? thCells : firstTrTds
+      const headerTexts = headerCells.map(h => h.textContent.toLowerCase().trim())
 
-      if (!isMealTable && !looksLikeFoodTable) return
+      // Detect if this is a food table at all
+      const isMealTable = headerTexts.some(h =>
+        h.includes('food') || h.includes('item') || h.includes('calor') ||
+        h.includes('protein') || h.includes('amount') || h.includes('carb') || h.includes('fat')
+      )
+      // Fallback: accept any table inside a meal context with 3+ rows and no obvious summary heading
+      const fallbackTable = !isMealTable && el.querySelectorAll('tr').length >= 3
+
+      if (!isMealTable && !fallbackTable) return
+      if (/daily total|nutrition summary|supplement|hydration|grocery/i.test(el.closest('div,section')?.previousElementSibling?.textContent || '')) return
 
       if (!currentOption) {
         currentOption = { label: 'Option A', items: [], totals: null }
       }
 
-      // Skip the header row if it contains th-like content in tds
-      let skipFirst = false
-      if (thHeaders.length === 0 && firstRowTds.some(h =>
-        h.includes('food') || h.includes('calor') || h.includes('protein') || h.includes('amount')
-      )) {
-        skipFirst = true
+      // ── Map column index by header name ──
+      function colIdx(keywords) {
+        const idx = headerTexts.findIndex(h => keywords.some(k => h.includes(k)))
+        return idx >= 0 ? idx : -1
       }
+      const COL_FOOD    = colIdx(['food','item','name']) !== -1 ? colIdx(['food','item','name']) : 0
+      const COL_AMOUNT  = colIdx(['amount','weight','gram','qty']) !== -1 ? colIdx(['amount','weight','gram','qty']) : 1
+      const COL_KCAL    = colIdx(['calor','kcal','energy']) !== -1 ? colIdx(['calor','kcal','energy']) : 2
+      const COL_PROTEIN = colIdx(['protein']) !== -1 ? colIdx(['protein']) : 3
+      const COL_CARBS   = colIdx(['carb']) !== -1 ? colIdx(['carb']) : 4
+      const COL_FATS    = colIdx(['fat']) !== -1 ? colIdx(['fat']) : 5
+
+      const skipHeaderRow = thCells.length === 0 && firstTrTds.length > 0 &&
+        firstTrTds.some(td => /food|calor|protein|amount/i.test(td.textContent))
 
       const allRows = [...el.querySelectorAll('tr')]
       allRows.forEach((row, rowIdx) => {
-        if (skipFirst && rowIdx === 0) return
-        // skip th rows
+        if (skipHeaderRow && rowIdx === 0) return
         if (row.querySelector('th')) return
         const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
-        if (cells.length < 2 || !cells[0]) return
-        if (/^total/i.test(cells[0])) {
-          currentOption.totals = { kcal: cells[2]||cells[1]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' }
+        if (cells.length < 2) return
+        const food = cells[COL_FOOD] || ''
+        if (!food) return
+        if (/^total/i.test(food)) {
+          currentOption.totals = {
+            kcal:    cells[COL_KCAL]    || '',
+            protein: cells[COL_PROTEIN] || '',
+            carbs:   cells[COL_CARBS]   || '',
+            fats:    cells[COL_FATS]    || '',
+          }
           return
         }
-        if (/^daily|^supplement|^hydration|^grocery/i.test(cells[0])) return
-        // cells[1] should be a number (amount in g) — skip non-food rows
-        if (cells[1] && isNaN(parseFloat(cells[1])) && cells[1].length > 6) return
-        currentOption.items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
+        if (/^daily|^supplement|^hydration|^grocery|^calories$|^protein$|^carbs$|^fats$/i.test(food)) return
+        // Extract just the numeric part from each cell (strips units like "g", "kcal")
+        function num(val) { return val ? String(parseFloat(val) || val) : '' }
+        currentOption.items.push({
+          food,
+          amount:  num(cells[COL_AMOUNT]),
+          kcal:    num(cells[COL_KCAL]),
+          protein: num(cells[COL_PROTEIN]),
+          carbs:   num(cells[COL_CARBS]),
+          fats:    num(cells[COL_FATS]),
+        })
       })
     }
   })
