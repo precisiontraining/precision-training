@@ -168,14 +168,17 @@ function parseNutritionPlan(html) {
   const doc = parser.parseFromString(html, 'text/html')
   const result = { intro: '', meals: [] }
 
-  // Extract coaching intro
-  const allEls = [...doc.body.children]
+  // Extract coaching intro — must be a real sentence paragraph, not table text
+  const allEls = [...doc.body.querySelectorAll('p, div')]
   for (const el of allEls) {
+    if (el.querySelector('table, h1, h2, h3, h4, h5, h6')) continue
     const txt = el.textContent.trim()
-    if (txt.length > 80 && !el.querySelector('table') && !el.querySelector('h1')) {
-      result.intro = txt
-      break
-    }
+    if (txt.length < 60 || txt.length > 600) continue
+    if (/\d{3,}\s*\d{2,}/.test(txt)) continue
+    if (/Food Item|Amount \(g\)|Calories|Protein \(g\)/i.test(txt)) continue
+    if (txt.split(' ').length < 8) continue
+    result.intro = txt
+    break
   }
 
   // Walk all elements in order to build meal + option structure
