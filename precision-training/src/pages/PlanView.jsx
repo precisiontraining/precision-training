@@ -240,22 +240,48 @@ function parseNutritionPlan(html) {
     }
 
     if (tag === 'table') {
-      const headers = [...el.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-      const isMealTable = headers.some(h => h.includes('food') || h.includes('calor') || h.includes('protein') || h.includes('amount'))
-      if (!isMealTable || !currentMeal) return
+      if (!currentMeal) return
+
+      // Detect meal table — check th headers OR first row td content
+      const thHeaders = [...el.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
+      const firstRowTds = [...el.querySelectorAll('tr:first-child td')].map(c => c.textContent.toLowerCase())
+      const allHeaders = [...thHeaders, ...firstRowTds]
+      const isMealTable = allHeaders.some(h =>
+        h.includes('food') || h.includes('calor') || h.includes('protein') ||
+        h.includes('amount') || h.includes('carb') || h.includes('fat')
+      )
+      // Also accept tables with no headers at all if inside a meal context (model skipped headers)
+      const hasNoHeaders = thHeaders.length === 0
+      const looksLikeFoodTable = hasNoHeaders && el.querySelectorAll('tr').length >= 2
+
+      if (!isMealTable && !looksLikeFoodTable) return
 
       if (!currentOption) {
         currentOption = { label: 'Option A', items: [], totals: null }
       }
 
-      el.querySelectorAll('tbody tr, tfoot tr').forEach(row => {
+      // Skip the header row if it contains th-like content in tds
+      let skipFirst = false
+      if (thHeaders.length === 0 && firstRowTds.some(h =>
+        h.includes('food') || h.includes('calor') || h.includes('protein') || h.includes('amount')
+      )) {
+        skipFirst = true
+      }
+
+      const allRows = [...el.querySelectorAll('tr')]
+      allRows.forEach((row, rowIdx) => {
+        if (skipFirst && rowIdx === 0) return
+        // skip th rows
+        if (row.querySelector('th')) return
         const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
-        if (!cells[0]) return
+        if (cells.length < 2 || !cells[0]) return
         if (/^total/i.test(cells[0])) {
           currentOption.totals = { kcal: cells[2]||cells[1]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' }
           return
         }
-        if (/^daily/i.test(cells[0])) return
+        if (/^daily|^supplement|^hydration|^grocery/i.test(cells[0])) return
+        // cells[1] should be a number (amount in g) — skip non-food rows
+        if (cells[1] && isNaN(parseFloat(cells[1])) && cells[1].length > 6) return
         currentOption.items.push({ food: cells[0], amount: cells[1]||'', kcal: cells[2]||'', protein: cells[3]||'', carbs: cells[4]||'', fats: cells[5]||'' })
       })
     }
