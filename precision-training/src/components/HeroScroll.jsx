@@ -191,7 +191,13 @@ export default function HeroScroll({ tallyTraining, tallyNutrition }) {
               <img
                 src="/logo.png"
                 alt="Precision Training"
-                style={{ width: 'clamp(140px, 20vw, 200px)', height: 'auto', display: 'block', position: 'relative', zIndex: 1 }}
+                style={{
+                  width: 'clamp(140px, 20vw, 200px)', height: 'auto', display: 'block',
+                  position: 'relative', zIndex: 1,
+                  mixBlendMode: 'screen',
+                  WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 55%, transparent 100%)',
+                  maskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 55%, transparent 100%)',
+                }}
               />
             </div>
 
