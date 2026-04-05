@@ -380,8 +380,9 @@
   background: #080808;
   border: 1px solid #1a1a1a;
   border-radius: 12px;
-  padding: 18px;
+  padding: 0;
   overflow: hidden;
+  height: 220px;
 }
 
 .previewTable { font-size: 12px; }

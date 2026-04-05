@@ -157,20 +157,7 @@ export default function Home() {
         <div className={styles.whatYouGet}>
           <div className={styles.planCard}>
             <div className={styles.planPreview}>
-              <div className={styles.previewTable}>
-                <div className={styles.previewHeader}>Daily Workouts</div>
-                <div className={styles.previewRow}>Monday – Upper Body Strength</div>
-                <table className={styles.miniTable}>
-                  <thead>
-                    <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Bench Press</td><td>4</td><td>6–8</td><td>2 min</td></tr>
-                    <tr><td>Pull-Ups</td><td>3</td><td>6–8</td><td>2 min</td></tr>
-                    <tr><td>OHP</td><td>3</td><td>8–10</td><td>90s</td></tr>
-                  </tbody>
-                </table>
-              </div>
+              <img src="/preview-training.png" alt="Training Plan Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '10px', display: 'block' }} />
             </div>
             <h3>Your Personal Training Plan</h3>
             <ul className={styles.featureList}>
@@ -190,19 +177,7 @@ export default function Home() {
 
           <div className={styles.planCard}>
             <div className={styles.planPreview}>
-              <div className={styles.previewTable}>
-                <div className={styles.previewHeader}>Meal 1 – Breakfast</div>
-                <table className={styles.miniTable}>
-                  <thead>
-                    <tr><th>Food Item</th><th>Amount</th><th>kcal</th><th>Protein</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Whole Eggs</td><td>150g</td><td>210</td><td>18g</td></tr>
-                    <tr><td>Oats</td><td>100g</td><td>389</td><td>17g</td></tr>
-                    <tr><td>Greek Yogurt</td><td>200g</td><td>120</td><td>20g</td></tr>
-                  </tbody>
-                </table>
-              </div>
+              <img src="/preview-nutrition.png" alt="Nutrition Plan Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '10px', display: 'block' }} />
             </div>
             <h3>Your Personal Nutrition Plan</h3>
             <ul className={styles.featureList}>
