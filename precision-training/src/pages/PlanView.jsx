@@ -13,12 +13,16 @@ const HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_A
 // Detects if a heading text looks like a training day
 function isDayHeading(text) {
   const t = text.toLowerCase().trim()
+  // Explicitly exclude summary/overview/table headings
+  if (/overview|summary|schedule|split|plan|protocol|guideline|recovery|warm.?up|cool.?down|progression|week\s*\d/i.test(t)) return false
   // "Monday", "Tuesday" etc.
   if (DAYS.some(d => t.includes(d.toLowerCase()))) return true
   // "Day 1", "Day 2 – Upper Body" etc.
   if (/^day\s*\d+/i.test(t)) return true
-  // "Workout", "Workout 1", "Workout A", "Session 1", "Training Day"
-  if (/^(workout|session|training)(\s|$)/i.test(t)) return true
+  // "Workout 1", "Session 1" but NOT bare "Training Overview"
+  if (/^(workout|session)\s*(\d+|[a-c])?(\s|$)/i.test(t)) return true
+  // "Training Day 1" specifically
+  if (/^training\s+(day\s*\d+|[a-c]\b)/i.test(t)) return true
   // "Upper Body", "Lower Body", "Push Day", "Pull Day", "Leg Day" etc.
   if (/\b(upper|lower|push|pull|leg|chest|back|shoulder|arm|full.?body|cardio|core|glute|hamstring)\b/i.test(t)) return true
   return false
