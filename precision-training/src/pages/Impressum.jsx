@@ -16,7 +16,7 @@ export default function Impressum() {
         Deutschland</p>
 
         <p>Website: <a href="https://www.precision-training.io">www.precision-training.io</a></p>
-        <p>E-Mail: <a href="mailto:precisiontraining930@gmail.com">precisiontraining930@gmail.com</a></p>
+        <p>E-Mail: <a href="mailto:info@precision-training.io">info@precision-training.io</a></p>
 
         <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
         <p>Florian Rappold<br />

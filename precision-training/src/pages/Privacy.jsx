@@ -30,7 +30,7 @@ export default function Privacy() {
 
         <h2>7. Your Rights</h2>
         <p>If you are located in the EU, you have the right to: Access your stored data, Request correction of inaccurate data, Request deletion of your data, and Withdraw consent at any time.</p>
-        <p>To exercise these rights, contact us at: <a href="mailto:precisiontraining930@gmail.com">precisiontraining930@gmail.com</a></p>
+        <p>To exercise these rights, contact us at: <a href="mailto:info@precision-training.io">info@precision-training.io</a></p>
 
         <h2>8. Third-Party Services</h2>
         <p>We may use third-party tools for: Payment processing, Email delivery, and Automation and plan generation. These providers process data only to the extent necessary to deliver our services.</p>
@@ -38,7 +38,7 @@ export default function Privacy() {
         <h2>9. Contact</h2>
         <p>Precision Training<br />
         Website: <a href="https://www.precision-training.io">www.precision-training.io</a><br />
-        Email: <a href="mailto:precisiontraining930@gmail.com">precisiontraining930@gmail.com</a></p>
+        Email: <a href="mailto:info@precision-training.io">info@precision-training.io</a></p>
       </div>
     </div>
   )
