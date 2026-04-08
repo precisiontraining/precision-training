@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import ProgressTracker from '../components/ProgressTracker'
 import MacroTracker from '../components/MacroTracker'
 import AICoach from '../components/AICoach'
+import SuggestionPopup from '../components/SuggestionPopup'
+import { analyzeProgress, isSuggestionDismissed } from '../utils/analyzeProgress'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, EXERCISE_GIF_URL, PLAN_CHAT_URL, DAYS } from '../constants'
 import styles from './PlanView.module.css'
 
@@ -358,6 +360,7 @@ export default function PlanView() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(null)
   const [parsedPlan, setParsedPlan] = useState(null)
+  const [activeSuggestion, setActiveSuggestion] = useState(null)
 
   async function unlock() {
     setLoading(true); setError('')
@@ -372,8 +375,30 @@ export default function PlanView() {
       const parsed = p.plan_type === 'nutrition' ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
       setParsedPlan(parsed)
       setTimeout(() => fetchImages(p.html_content, parsed), 100)
+      // Load progress history and run suggestion engine (training plans only)
+      if (p.plan_type !== 'nutrition') {
+        setTimeout(() => loadAndAnalyzeProgress(slug, parsed), 800)
+      }
     } catch { setError('Something went wrong. Please try again.') }
     setLoading(false)
+  }
+
+  async function loadAndAnalyzeProgress(planSlug, parsed) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/progress?plan_slug=eq.${planSlug}&select=*&order=week_number.asc`,
+        { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+      )
+      const history = await res.json()
+      if (!Array.isArray(history) || history.length === 0) return
+      const exercises = (parsed?.days || []).flatMap(d => d.exercises.map(e => e.name))
+      const distinctWeeks = new Set(history.map(h => h.week_number)).size
+      const suggestion = analyzeProgress(history, exercises, distinctWeeks)
+      if (suggestion && !isSuggestionDismissed(suggestion)) {
+        // Small delay so the page finishes loading before the popup appears
+        setTimeout(() => setActiveSuggestion(suggestion), 1200)
+      }
+    } catch {}
   }
 
   async function fetchImages(html, parsed) {
@@ -619,6 +644,17 @@ export default function PlanView() {
       )}
 
       {toast && <div className="toast">{toast}</div>}
+
+      {activeSuggestion && (
+        <SuggestionPopup
+          suggestion={activeSuggestion}
+          onDismiss={() => setActiveSuggestion(null)}
+          onApply={(s) => {
+            setActiveSuggestion(null)
+            showToast(`✓ ${s.action}`)
+          }}
+        />
+      )}
     </div>
   )
 }

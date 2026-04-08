@@ -238,7 +238,7 @@ export default function HeroScroll({ tallyTraining, tallyNutrition }) {
               marginTop: 18, fontSize: 'clamp(11px, 1.2vw, 13px)', fontWeight: 400,
               color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', textTransform: 'uppercase',
             }}>
-              Personalised by AI &nbsp;·&nbsp; Delivered instantly
+              Calculated for you &nbsp;·&nbsp; Ready in minutes
             </p>
           </div>
 
