@@ -61,7 +61,7 @@ export default function Home() {
     },
     {
       q: "What if I'm not satisfied with my plan?",
-      a: 'Contact us at precisiontraining930@gmail.com within 14 days of receiving your plan. Describe what feels off or what is missing, and we will revise it based on your feedback — at no additional cost.',
+      a: 'Contact us at info@precision-training.io within 14 days of receiving your plan. Describe what feels off or what is missing, and we will revise it based on your feedback — at no additional cost.',
     },
     {
       q: 'Can I adjust my plan after I receive it?',
@@ -167,6 +167,7 @@ export default function Home() {
               <li><span className={styles.check}>✓</span><span>Built-in progression system</span></li>
               <li><span className={styles.check}>✓</span><span>Swap or add exercises anytime</span></li>
               <li><span className={styles.check}>✓</span><span>Progress Tracker to log your weights weekly</span></li>
+              <li><span className={styles.check}>✓</span><span>Plan Insights that detect stagnation and suggest adjustments</span></li>
               <li><span className={styles.check}>✓</span><span>AI Coach that knows your exact plan</span></li>
               <li><span className={styles.check}>✓</span><span>Delivered as password-protected personal page</span></li>
             </ul>

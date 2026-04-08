@@ -4,6 +4,7 @@ import ProgressTracker from '../components/ProgressTracker'
 import MacroTracker from '../components/MacroTracker'
 import AICoach from '../components/AICoach'
 import SuggestionPopup from '../components/SuggestionPopup'
+import ExerciseSearchInput from '../components/ExerciseSearchInput'
 import { analyzeProgress, isSuggestionDismissed } from '../utils/analyzeProgress'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, EXERCISE_GIF_URL, PLAN_CHAT_URL, DAYS } from '../constants'
 import styles from './PlanView.module.css'
@@ -470,14 +471,7 @@ export default function PlanView() {
 
   async function openSwap(exercise) {
     setSwapModal({ item: exercise.name, newName: '', sets: exercise.sets, reps: exercise.reps, rest: exercise.rest })
-    setSuggestions([]); setLoadingSuggestions(true)
-    try {
-      const res = await fetch(PLAN_CHAT_URL, { method: 'POST', headers: { ...HEADERS },
-        body: JSON.stringify({ slug, message: `Suggest 3 alternative exercises for ${exercise.name}. Reply with only the 3 exercise names, comma separated.`, history: [] }) })
-      const data = await res.json()
-      setSuggestions(data.reply?.split(',').map(s => s.trim()).filter(Boolean) || [])
-    } catch {}
-    setLoadingSuggestions(false)
+    setSuggestions([])
   }
 
   async function applySwap() {
@@ -493,14 +487,7 @@ export default function PlanView() {
 
   async function openAdd(dayTitle) {
     setAddModal({ day: dayTitle, name: '', sets: '3', reps: '8-12', rest: '90s', notes: '' })
-    setSuggestions([]); setLoadingSuggestions(true)
-    try {
-      const res = await fetch(PLAN_CHAT_URL, { method: 'POST', headers: { ...HEADERS },
-        body: JSON.stringify({ slug, message: `Suggest 3 exercises for ${dayTitle}. Reply with only the 3 exercise names, comma separated.`, history: [] }) })
-      const data = await res.json()
-      setSuggestions(data.reply?.split(',').map(s => s.trim()).filter(Boolean) || [])
-    } catch {}
-    setLoadingSuggestions(false)
+    setSuggestions([])
   }
 
   async function applyAdd() {
@@ -573,14 +560,11 @@ export default function PlanView() {
           <div className="modal">
             <h3>Swap "{swapModal.item}"</h3>
             <div className="modal-label">Replace with</div>
-            <input className="modal-input" value={swapModal.newName}
-              onChange={e => setSwapModal(p => ({ ...p, newName: e.target.value }))} placeholder="e.g. Dumbbell Press" />
-            {loadingSuggestions && <div style={{color:'var(--gray)',fontSize:12,marginBottom:8}}>Loading suggestions…</div>}
-            {suggestions.length > 0 && (
-              <div className="suggestion-chips">
-                {suggestions.map(s => <button key={s} className="chip" onClick={() => setSwapModal(p => ({ ...p, newName: s }))}>{s}</button>)}
-              </div>
-            )}
+            <ExerciseSearchInput
+              value={swapModal.newName}
+              onChange={name => setSwapModal(p => ({ ...p, newName: name || '' }))}
+              placeholder="Search exercises…"
+            />
             <div className="modal-row">
               {[['Sets','sets'],['Reps','reps'],['Rest','rest']].map(([label,key]) => (
                 <div key={key}>
@@ -591,7 +575,7 @@ export default function PlanView() {
             </div>
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setSwapModal(null)}>Cancel</button>
-              <button className="btn-confirm" onClick={applySwap}>Apply Swap</button>
+              <button className="btn-confirm" onClick={applySwap} disabled={!swapModal.newName}>Apply Swap</button>
             </div>
           </div>
         </div>
@@ -603,14 +587,11 @@ export default function PlanView() {
           <div className="modal">
             <h3>Add Exercise to {addModal.day}</h3>
             <div className="modal-label">Exercise name</div>
-            <input className="modal-input" value={addModal.name}
-              onChange={e => setAddModal(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Cable Fly" />
-            {loadingSuggestions && <div style={{color:'var(--gray)',fontSize:12,marginBottom:8}}>Loading suggestions…</div>}
-            {suggestions.length > 0 && (
-              <div className="suggestion-chips">
-                {suggestions.map(s => <button key={s} className="chip" onClick={() => setAddModal(p => ({ ...p, name: s }))}>{s}</button>)}
-              </div>
-            )}
+            <ExerciseSearchInput
+              value={addModal.name}
+              onChange={name => setAddModal(p => ({ ...p, name: name || '' }))}
+              placeholder="Search exercises…"
+            />
             <div className="modal-row">
               {[['Sets','sets','3'],['Reps','reps','8-12'],['Rest','rest','90s']].map(([label,key,ph]) => (
                 <div key={key}>
@@ -623,7 +604,7 @@ export default function PlanView() {
             <input className="modal-input" value={addModal.notes} onChange={e => setAddModal(p => ({ ...p, notes: e.target.value }))} placeholder="e.g. Focus on form" />
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setAddModal(null)}>Cancel</button>
-              <button className="btn-confirm" onClick={applyAdd}>Add Exercise</button>
+              <button className="btn-confirm" onClick={applyAdd} disabled={!addModal.name}>Add Exercise</button>
             </div>
           </div>
         </div>
