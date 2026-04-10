@@ -18,50 +18,22 @@ function generateId() {
 }
 
 function buildPayload(form) {
-  const now = new Date().toISOString()
   const id = generateId()
-  const selectedLocation = LOCATION_OPTIONS_TRAINING.find(o => o.text === form.location)
-
-  const fields = [
-    {
-      key: 'question_eANrKq',
-      label: 'Where are you based?',
-      type: 'MULTIPLE_CHOICE',
-      value: selectedLocation ? [selectedLocation.id] : [],
-      options: LOCATION_OPTIONS_TRAINING,
-    },
-    { key: 'question_eBxZlq', label: 'Weight (kg)', type: 'INPUT_NUMBER', value: form.unit === 'metric' ? parseFloat(form.weight) : null },
-    { key: 'question_9dJGyG', label: 'Height (cm)', type: 'INPUT_NUMBER', value: form.unit === 'metric' ? parseFloat(form.height) : null },
-    { key: 'question_WoeRDJ', label: 'Weight (lbs)', type: 'INPUT_NUMBER', value: form.unit === 'imperial' ? parseFloat(form.weight) : null },
-    { key: 'question_axj4K9', label: 'Height (ft)', type: 'INPUT_NUMBER', value: form.unit === 'imperial' ? parseFloat(form.height) : null },
-    { key: 'question_NAB5yG', label: 'First Name', type: 'INPUT_TEXT', value: form.name },
-    { key: 'question_qbEZe2', label: 'Email', type: 'INPUT_EMAIL', value: form.email },
-    { key: 'question_QAB2yg', label: 'Age', type: 'INPUT_NUMBER', value: parseInt(form.age) },
-    { key: 'question_1KdeNW', label: 'What equipment do you have access to?', type: 'INPUT_TEXT', value: form.equipment },
-    { key: 'question_J2XxD4', label: 'Training Days per Week', type: 'INPUT_NUMBER', value: parseInt(form.trainingDays) },
-    {
-      key: 'question_oAkg6e',
-      label: '',
-      type: 'CHECKBOXES',
-      value: ['2c6336f0-4f80-4c96-b4eb-e77346b450ce'],
-      options: [{ id: '2c6336f0-4f80-4c96-b4eb-e77346b450ce', text: 'I agree that my submitted data will be processed for the purpose of generating my personalized training plan and delivering it via email. I have read and accept the privacy policy.' }],
-    },
-    { key: 'question_oAkg6e_2c6336f0-4f80-4c96-b4eb-e77346b450ce', label: 'Checkbox', type: 'CHECKBOXES', value: true },
-  ]
-
   return {
-    eventId: crypto.randomUUID?.() || id,
-    eventType: 'FORM_RESPONSE',
-    createdAt: now,
-    data: {
-      responseId: id,
-      submissionId: id,
-      respondentId: id,
-      formId: 'XxDjzg',
-      formName: 'AI Training Plan',
-      createdAt: now,
-      fields,
-    },
+    formId: 'XxDjzg',
+    formName: 'AI Training Plan',
+    responseId: id,
+    question_eANrKq: form.location,
+    question_eBxZlq: form.unit === 'metric' ? parseFloat(form.weight) : null,
+    question_9dJGyG: form.unit === 'metric' ? parseFloat(form.height) : null,
+    question_WoeRDJ: form.unit === 'imperial' ? parseFloat(form.weight) : null,
+    question_axj4K9: form.unit === 'imperial' ? parseFloat(form.height) : null,
+    question_NAB5yG: form.name,
+    question_qbEZe2: form.email,
+    question_QAB2yg: parseInt(form.age),
+    question_1KdeNW: form.equipment,
+    question_J2XxD4: parseInt(form.trainingDays),
+    question_oAkg6e_consent: true,
   }
 }
 
@@ -120,7 +92,6 @@ export default function FormTraining() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload(form)),
-        mode: 'no-cors',
       })
     } catch {}
     setLoading(false)

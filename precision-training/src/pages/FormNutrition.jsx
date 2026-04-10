@@ -18,56 +18,28 @@ function generateId() {
 }
 
 function buildPayload(form) {
-  const now = new Date().toISOString()
   const id = generateId()
-  const selectedLocation = LOCATION_OPTIONS_NUTRITION.find(o => o.text === form.location)
-
-  const fields = [
-    {
-      key: 'question_XGRWxL',
-      label: 'Where are you based?',
-      type: 'MULTIPLE_CHOICE',
-      value: selectedLocation ? [selectedLocation.id] : [],
-      options: LOCATION_OPTIONS_NUTRITION,
-    },
-    { key: 'question_qbJBbk', label: 'Height (cm)', type: 'INPUT_NUMBER', value: form.unit === 'metric' ? parseFloat(form.height) : null },
-    { key: 'question_QAzrAk', label: 'Current weight (kg)', type: 'INPUT_NUMBER', value: form.unit === 'metric' ? parseFloat(form.weight) : null },
-    { key: 'question_8kJQ1z', label: 'Height (ft)', type: 'INPUT_NUMBER', value: form.unit === 'imperial' ? parseFloat(form.height) : null },
-    { key: 'question_0Mb6QB', label: 'Current weight (lbs)', type: 'INPUT_NUMBER', value: form.unit === 'imperial' ? parseFloat(form.weight) : null },
-    { key: 'question_9dR1JE', label: 'First Name', type: 'INPUT_TEXT', value: form.name },
-    { key: 'question_eB0Axx', label: 'Email', type: 'INPUT_EMAIL', value: form.email },
-    { key: 'question_Zd1Vdv', label: 'Age', type: 'INPUT_NUMBER', value: parseInt(form.age) },
-    { key: 'question_NAbVAb', label: 'Gender', type: 'INPUT_TEXT', value: form.gender },
-    { key: 'question_9dR1d4', label: 'What is your main goal? ( bulk / cut / maintaining )', type: 'INPUT_TEXT', value: form.goal },
-    { key: 'question_eB0ABo', label: 'Describe your daily activity outside the gym', type: 'INPUT_TEXT', value: form.activity },
-    { key: 'question_WAKoAQ', label: 'How many days per week do you train?', type: 'INPUT_NUMBER', value: parseInt(form.trainingDays) },
-    { key: 'question_aBAxBy', label: 'Do you follow a specific diet?', type: 'INPUT_TEXT', value: form.diet },
-    { key: 'question_6dWkd5', label: 'List foods you dislike or want to avoid', type: 'TEXTAREA', value: form.avoidFoods || null },
-    { key: 'question_7daDdz', label: 'How many meals per day do you prefer?', type: 'INPUT_NUMBER', value: parseInt(form.mealsPerDay) },
-    { key: 'question_blYklE', label: 'Do you struggle to eat enough food?', type: 'INPUT_TEXT', value: form.struggleToEat },
-    {
-      key: 'question_42pE4k',
-      label: '',
-      type: 'CHECKBOXES',
-      value: ['921bfd98-970c-4396-a01f-d700cdc58c41'],
-      options: [{ id: '921bfd98-970c-4396-a01f-d700cdc58c41', text: 'I agree that my submitted data will be processed for the purpose of generating my personalized training and nutrition plan and delivering it via email. I have read and accept the privacy policy.' }],
-    },
-    { key: 'question_42pE4k_921bfd98-970c-4396-a01f-d700cdc58c41', label: 'Checkbox', type: 'CHECKBOXES', value: true },
-  ]
-
   return {
-    eventId: crypto.randomUUID?.() || id,
-    eventType: 'FORM_RESPONSE',
-    createdAt: now,
-    data: {
-      responseId: id,
-      submissionId: id,
-      respondentId: id,
-      formId: 'EkPJ4l',
-      formName: 'AI NUTRITION PLAN',
-      createdAt: now,
-      fields,
-    },
+    formId: 'EkPJ4l',
+    formName: 'AI NUTRITION PLAN',
+    responseId: id,
+    question_XGRWxL: form.location,
+    question_qbJBbk: form.unit === 'metric' ? parseFloat(form.height) : null,
+    question_QAzrAk: form.unit === 'metric' ? parseFloat(form.weight) : null,
+    question_8kJQ1z: form.unit === 'imperial' ? parseFloat(form.height) : null,
+    question_0Mb6QB: form.unit === 'imperial' ? parseFloat(form.weight) : null,
+    question_9dR1JE: form.name,
+    question_eB0Axx: form.email,
+    question_Zd1Vdv: parseInt(form.age),
+    question_NAbVAb: form.gender,
+    question_9dR1d4: form.goal,
+    question_eB0ABo: form.activity,
+    question_WAKoAQ: parseInt(form.trainingDays),
+    question_aBAxBy: form.diet,
+    question_6dWkd5: form.avoidFoods || null,
+    question_7daDdz: parseInt(form.mealsPerDay),
+    question_blYklE: form.struggleToEat,
+    question_42pE4k_consent: true,
   }
 }
 
@@ -130,7 +102,6 @@ export default function FormNutrition() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload(form)),
-        mode: 'no-cors',
       })
     } catch {}
     setLoading(false)

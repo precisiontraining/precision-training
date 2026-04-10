@@ -18,59 +18,27 @@ function generateId() {
 }
 
 function buildPayload(form) {
-  const now = new Date().toISOString()
   const id = generateId()
-  const selectedLocation = LOCATION_OPTIONS.find(o => o.text === form.location)
-
-  // Compose GLP-1 context into equipment field so Make.com GPT prompt picks it up
   const glpContext = form.glp1 === 'yes'
-    ? ` | GLP-1 Medication: YES | Stage: ${form.glp1Stage} | Apply Muscle Preservation Mode: 3x Full-Body split, 30-45 min sessions, protein 1.6-2.2g/kg, compounds 3-4 sets 8-12 reps 90-120s rest, isolations 3 sets 10-15 reps 60-90s rest. Add 5-min warm-up and post-workout protein reminder to every day.`
-    : ' | GLP-1 Medication: NO'
-
-  const fields = [
-    {
-      key: 'question_eANrKq',
-      label: 'Where are you based?',
-      type: 'MULTIPLE_CHOICE',
-      value: selectedLocation ? [selectedLocation.id] : [],
-      options: LOCATION_OPTIONS,
-    },
-    { key: 'question_eBxZlq', label: 'Weight (kg)', type: 'INPUT_NUMBER', value: form.unit === 'metric' ? parseFloat(form.weight) : null },
-    { key: 'question_9dJGyG', label: 'Height (cm)', type: 'INPUT_NUMBER', value: form.unit === 'metric' ? parseFloat(form.height) : null },
-    { key: 'question_WoeRDJ', label: 'Weight (lbs)', type: 'INPUT_NUMBER', value: form.unit === 'imperial' ? parseFloat(form.weight) : null },
-    { key: 'question_axj4K9', label: 'Height (ft)', type: 'INPUT_NUMBER', value: form.unit === 'imperial' ? parseFloat(form.height) : null },
-    { key: 'question_NAB5yG', label: 'First Name', type: 'INPUT_TEXT', value: form.name },
-    { key: 'question_qbEZe2', label: 'Email', type: 'INPUT_EMAIL', value: form.email },
-    { key: 'question_QAB2yg', label: 'Age', type: 'INPUT_NUMBER', value: parseInt(form.age) },
-    // Equipment field carries GLP-1 context so the existing Make.com prompt picks it up
-    { key: 'question_1KdeNW', label: 'What equipment do you have access to?', type: 'INPUT_TEXT', value: form.equipment + glpContext },
-    { key: 'question_J2XxD4', label: 'Training Days per Week', type: 'INPUT_NUMBER', value: 3 }, // GLP-1 default = 3
-    // Dedicated GLP-1 fields (for when Make.com is updated to read them)
-    { key: 'question_glp1', label: 'GLP-1 Medication', type: 'INPUT_TEXT', value: form.glp1 },
-    { key: 'question_glp1_stage', label: 'GLP-1 Stage', type: 'INPUT_TEXT', value: form.glp1 === 'yes' ? form.glp1Stage : 'N/A' },
-    {
-      key: 'question_oAkg6e',
-      label: '',
-      type: 'CHECKBOXES',
-      value: ['2c6336f0-4f80-4c96-b4eb-e77346b450ce'],
-      options: [{ id: '2c6336f0-4f80-4c96-b4eb-e77346b450ce', text: 'I agree that my submitted data will be processed for the purpose of generating my personalized training plan and delivering it via email. I have read and accept the privacy policy.' }],
-    },
-    { key: 'question_oAkg6e_2c6336f0-4f80-4c96-b4eb-e77346b450ce', label: 'Checkbox', type: 'CHECKBOXES', value: true },
-  ]
-
+    ? ` | GLP-1: YES | Stage: ${form.glp1Stage} | MUSCLE PRESERVATION MODE: 3x Full-Body, 30-45min, protein 1.6-2.2g/kg, compounds 3-4x8-12 90-120s rest, iso 3x10-15 60-90s rest, warm-up + post-workout protein cue every day.`
+    : ' | GLP-1: PLANNING TO START | Apply Muscle Preservation Mode preemptively.'
   return {
-    eventId: crypto.randomUUID?.() || id,
-    eventType: 'FORM_RESPONSE',
-    createdAt: now,
-    data: {
-      responseId: id,
-      submissionId: id,
-      respondentId: id,
-      formId: 'XxDjzg',
-      formName: 'AI Training Plan',
-      createdAt: now,
-      fields,
-    },
+    formId: 'XxDjzg',
+    formName: 'AI Training Plan - GLP-1 Muscle Guard',
+    responseId: id,
+    question_eANrKq: form.location,
+    question_eBxZlq: form.unit === 'metric' ? parseFloat(form.weight) : null,
+    question_9dJGyG: form.unit === 'metric' ? parseFloat(form.height) : null,
+    question_WoeRDJ: form.unit === 'imperial' ? parseFloat(form.weight) : null,
+    question_axj4K9: form.unit === 'imperial' ? parseFloat(form.height) : null,
+    question_NAB5yG: form.name,
+    question_qbEZe2: form.email,
+    question_QAB2yg: parseInt(form.age),
+    question_1KdeNW: form.equipment + glpContext,
+    question_J2XxD4: 3,
+    question_glp1: form.glp1,
+    question_glp1_stage: form.glp1 === 'yes' ? form.glp1Stage : 'N/A',
+    question_oAkg6e_consent: true,
   }
 }
 
@@ -129,7 +97,6 @@ export default function FormGLP1() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload(form)),
-        mode: 'no-cors',
       })
     } catch {}
     setLoading(false)
