@@ -9,6 +9,9 @@ export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const TALLY_TRAINING = import.meta.env.VITE_TALLY_TRAINING ?? 'https://tally.so/r/XxDjzg'
 export const TALLY_NUTRITION = import.meta.env.VITE_TALLY_NUTRITION ?? 'https://tally.so/r/EkPJ4l'
 
+export const MAKE_TRAINING_WEBHOOK = 'https://hook.eu2.make.com/5y3vnysdmit1fieitkd4mqnkewte3kmv'
+export const MAKE_NUTRITION_WEBHOOK = 'https://hook.eu2.make.com/11gmiizax8vkpvfih3nhmvth3y79m6yv'
+
 export const EXERCISE_GIF_URL = `${SUPABASE_URL}/functions/v1/exercise-gif`
 export const PLAN_CHAT_URL = `${SUPABASE_URL}/functions/v1/plan-chat`
 

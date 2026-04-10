@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 
 const GOLD = '#c8a96e'
 const LERP = 0.09
@@ -113,7 +114,7 @@ function SystemFlow({ flowRef }) {
 }
 
 // ── Main HeroScroll ──────────────────────────────────────────────────────────
-export default function HeroScroll({ tallyTraining, tallyNutrition }) {
+export default function HeroScroll({ trainingPath, nutritionPath, glp1Path }) {
   const trackRef  = useRef(null)
   const logoRef   = useRef(null)
   const subRef    = useRef(null)
@@ -307,10 +308,10 @@ export default function HeroScroll({ tallyTraining, tallyNutrition }) {
           {/* CTAs */}
           <div ref={ctaRef} style={{
             position:'absolute', zIndex:20, bottom:'6vh',
-            display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center',
+            display:'flex', gap:10, flexWrap:'wrap', justifyContent:'center',
             padding:'0 24px', opacity:0, willChange:'opacity, transform',
           }}>
-            <a href={tallyTraining} target="_blank" rel="noreferrer" style={{
+            <Link to={trainingPath} style={{
               display:'inline-flex', alignItems:'center', padding:'13px 26px',
               borderRadius:50, fontFamily:'Montserrat, sans-serif',
               fontSize:12, fontWeight:700, letterSpacing:'1.5px',
@@ -321,8 +322,8 @@ export default function HeroScroll({ tallyTraining, tallyNutrition }) {
             }}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 12px 36px rgba(200,169,110,0.46)' }}
               onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='0 8px 28px rgba(200,169,110,0.3)' }}
-            >Get My Training Plan →</a>
-            <a href={tallyNutrition} target="_blank" rel="noreferrer" style={{
+            >Get My Training Plan →</Link>
+            <Link to={nutritionPath} style={{
               display:'inline-flex', alignItems:'center', padding:'13px 26px',
               borderRadius:50, fontFamily:'Montserrat, sans-serif',
               fontSize:12, fontWeight:700, letterSpacing:'1.5px',
@@ -333,7 +334,20 @@ export default function HeroScroll({ tallyTraining, tallyNutrition }) {
             }}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.background='rgba(200,169,110,0.07)'; e.currentTarget.style.borderColor='rgba(200,169,110,0.5)' }}
               onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.background='transparent'; e.currentTarget.style.borderColor='rgba(200,169,110,0.3)' }}
-            >Get My Nutrition Plan →</a>
+            >Get My Nutrition Plan →</Link>
+            <Link to={glp1Path} style={{
+              display:'inline-flex', alignItems:'center', gap:6, padding:'13px 22px',
+              borderRadius:50, fontFamily:'Montserrat, sans-serif',
+              fontSize:11, fontWeight:700, letterSpacing:'1.2px',
+              textTransform:'uppercase', textDecoration:'none', cursor:'pointer',
+              background:'rgba(100,180,130,0.08)',
+              color:'#6db88a',
+              border:'1px solid rgba(100,180,130,0.3)',
+              transition:'transform 0.2s ease, background 0.2s ease, border-color 0.2s ease',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.background='rgba(100,180,130,0.14)'; e.currentTarget.style.borderColor='rgba(100,180,130,0.5)' }}
+              onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.background='rgba(100,180,130,0.08)'; e.currentTarget.style.borderColor='rgba(100,180,130,0.3)' }}
+            ><span>💊</span> GLP-1 Muscle Guard Plan →</Link>
           </div>
 
           {/* Scroll hint */}

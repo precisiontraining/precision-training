@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import HeroScroll from '../components/HeroScroll'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, TALLY_TRAINING, TALLY_NUTRITION } from '../constants'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../constants'
 import styles from './Home.module.css'
 
 export default function Home() {
@@ -90,7 +90,7 @@ export default function Home() {
       <Navbar />
 
       {/* ── SCROLL HERO ──────────────────────────────────── */}
-      <HeroScroll tallyTraining={TALLY_TRAINING} tallyNutrition={TALLY_NUTRITION} />
+      <HeroScroll trainingPath="/form/training" nutritionPath="/form/nutrition" glp1Path="/form/glp1" />
 
       {/* ── STATS BAR ─────────────────────────────────── */}
       <div className={styles.statsBar}>
@@ -153,7 +153,7 @@ export default function Home() {
       {/* ── WHAT YOU GET ──────────────────────────────── */}
       <section className={styles.section}>
         <p className={styles.eyebrow}>WHAT YOU GET</p>
-        <h2 className={styles.sectionTitle}>Two systems. <span className={styles.gold}>One goal.</span></h2>
+        <h2 className={styles.sectionTitle}>Three systems. <span className={styles.gold}>One goal.</span></h2>
         <div className={styles.whatYouGet}>
           <div className={styles.planCard}>
             <div className={styles.planPreview}>
@@ -171,9 +171,9 @@ export default function Home() {
               <li><span className={styles.check}>✓</span><span>AI Coach that knows your exact plan</span></li>
               <li><span className={styles.check}>✓</span><span>Delivered as password-protected personal page</span></li>
             </ul>
-            <a href={TALLY_TRAINING} target="_blank" rel="noreferrer" className={styles.btnFull}>
+            <Link to="/form/training" className={styles.btnFull}>
               Get My Training Plan →
-            </a>
+            </Link>
           </div>
 
           <div className={styles.planCard}>
@@ -191,9 +191,33 @@ export default function Home() {
               <li><span className={styles.check}>✓</span><span>AI Coach that knows your exact nutrition plan</span></li>
               <li><span className={styles.check}>✓</span><span>Delivered as password-protected personal page</span></li>
             </ul>
-            <a href={TALLY_NUTRITION} target="_blank" rel="noreferrer" className={styles.btnFull}>
+            <Link to="/form/nutrition" className={styles.btnFull}>
               Get My Nutrition Plan →
-            </a>
+            </Link>
+          </div>
+
+          <div className={styles.planCard} style={{ borderColor: 'rgba(100,180,130,0.15)', background: 'rgba(100,180,130,0.03)' }}>
+            <div className={styles.planPreview} style={{ background: 'rgba(100,180,130,0.06)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div style={{ textAlign:'center', padding:'40px 20px' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>💊</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#6db88a' }}>GLP-1 Muscle Guard</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>Muscle Preservation Mode</div>
+              </div>
+            </div>
+            <h3 style={{ color: '#6db88a' }}>GLP-1 Muscle Guard Plan</h3>
+            <ul className={styles.featureList}>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Built around Ozempic, Wegovy & Mounjaro users</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3× Full-Body split — preserves muscle on calorie deficit</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Higher protein targets (1.6–2.2 g/kg)</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>30–45 min sessions — fits low-energy days</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Compound-first programming for efficient muscle signal</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Warm-up + post-workout protein prompt every session</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach aware of your medication stage</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Delivered as password-protected personal page</span></li>
+            </ul>
+            <Link to="/form/glp1" className={styles.btnFull} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 6px 22px rgba(100,180,130,0.2)' }}>
+              Get My GLP-1 Plan →
+            </Link>
           </div>
         </div>
       </section>
@@ -229,14 +253,18 @@ export default function Home() {
             </div>
           </div>
           <div className={styles.formLinks}>
-            <a href={TALLY_TRAINING} target="_blank" rel="noreferrer" className={styles.formLink}>
+            <Link to="/form/training" className={styles.formLink}>
               <span className={styles.formLinkTitle}>AI Training Plan</span>
               <span className={styles.formLinkSub}>Get your personalized workout program →</span>
-            </a>
-            <a href={TALLY_NUTRITION} target="_blank" rel="noreferrer" className={styles.formLink}>
+            </Link>
+            <Link to="/form/nutrition" className={styles.formLink}>
               <span className={styles.formLinkTitle}>AI Nutrition Plan</span>
               <span className={styles.formLinkSub}>Get your personalized meal plan →</span>
-            </a>
+            </Link>
+            <Link to="/form/glp1" className={styles.formLink} style={{ borderColor: 'rgba(100,180,130,0.2)' }}>
+              <span className={styles.formLinkTitle} style={{ color: '#6db88a' }}>💊 GLP-1 Muscle Guard Plan</span>
+              <span className={styles.formLinkSub}>Preserve muscle while on Ozempic / Wegovy →</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -325,12 +353,15 @@ export default function Home() {
             No templates. No copy-paste programs. Just precision.
           </p>
           <div className={styles.heroBtns}>
-            <a href={TALLY_TRAINING} target="_blank" rel="noreferrer" className={styles.btnPrimary}>
+            <Link to="/form/training" className={styles.btnPrimary}>
               Get My Training Plan →
-            </a>
-            <a href={TALLY_NUTRITION} target="_blank" rel="noreferrer" className={styles.btnSecondary}>
+            </Link>
+            <Link to="/form/nutrition" className={styles.btnSecondary}>
               Get My Nutrition Plan →
-            </a>
+            </Link>
+            <Link to="/form/glp1" className={styles.btnSecondary} style={{ borderColor: 'rgba(100,180,130,0.35)', color: '#6db88a' }}>
+              💊 GLP-1 Muscle Guard Plan →
+            </Link>
           </div>
         </div>
       </section>
