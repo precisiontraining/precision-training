@@ -33,10 +33,10 @@ const IconPlan = () => (
 )
 
 const STEPS = [
-  { n:'01', label:'Formular ausfüllen',    sub:'Ziele, Körper & Equipment angeben',    Icon: IconForm, color:'#a0c4a0' },
-  { n:'02', label:'KI erstellt deinen Plan', sub:'Vollständig personalisiert in < 2 Min', Icon: IconAI,  color: GOLD   },
-  { n:'03', label:'E-Mail erhalten',        sub:'Dein Link + persönliches Passwort',    Icon: IconMail, color:'#8fafd4' },
-  { n:'04', label:'Plan aufrufen',          sub:'Jederzeit & überall abrufbar',         Icon: IconPlan, color:'#c4a0c4' },
+  { n:'01', label:'Fill Out the Form',      sub:'Enter your goals, body & equipment',   Icon: IconForm, color:'#a0c4a0' },
+  { n:'02', label:'AI Builds Your Plan',    sub:'Fully personalized in < 2 min',        Icon: IconAI,  color: GOLD   },
+  { n:'03', label:'Receive Your Email',     sub:'Your link + personal password',        Icon: IconMail, color:'#8fafd4' },
+  { n:'04', label:'Access Your Plan',       sub:'Available anytime & anywhere',         Icon: IconPlan, color:'#c4a0c4' },
 ]
 
 // ── Horizontal Connector (desktop) ──────────────────────────────────────────
@@ -67,7 +67,7 @@ function ConnV({ delay }) {
 function SystemFlow({ flowRef }) {
   return (
     <div ref={flowRef} className="sf-root">
-      <div className="sf-eyebrow">So funktioniert es</div>
+      <div className="sf-eyebrow">How It Works</div>
 
       {/* DESKTOP: horizontal row */}
       <div className="sf-desktop">
@@ -107,7 +107,7 @@ function SystemFlow({ flowRef }) {
         ))}
       </div>
 
-      <div className="sf-footer">Kein Account · Kein Abo · Sofort nutzbar</div>
+      <div className="sf-footer">No Account · No Subscription · Ready to Use</div>
     </div>
   )
 }
