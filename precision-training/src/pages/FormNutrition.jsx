@@ -40,6 +40,7 @@ function buildPayload(form) {
     question_7daDdz: parseInt(form.mealsPerDay),
     question_blYklE: form.struggleToEat,
     question_42pE4k_consent: true,
+    pt_token: WEBHOOK_SECRET,
   }
 }
 
@@ -100,7 +101,7 @@ export default function FormNutrition() {
     try {
       await fetch(MAKE_NUTRITION_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(WEBHOOK_SECRET ? { 'x-pt-token': WEBHOOK_SECRET } : {}) },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload(form)),
       })
     } catch {}

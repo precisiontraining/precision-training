@@ -39,6 +39,7 @@ function buildPayload(form) {
     question_glp1: form.glp1,
     question_glp1_stage: form.glp1 === 'yes' ? form.glp1Stage : 'N/A',
     question_oAkg6e_consent: true,
+    pt_token: WEBHOOK_SECRET,
   }
 }
 
@@ -95,7 +96,7 @@ export default function FormGLP1() {
     try {
       await fetch(MAKE_TRAINING_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(WEBHOOK_SECRET ? { 'x-pt-token': WEBHOOK_SECRET } : {}) },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload(form)),
       })
     } catch {}

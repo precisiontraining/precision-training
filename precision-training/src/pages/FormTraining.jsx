@@ -34,6 +34,7 @@ function buildPayload(form) {
     question_1KdeNW: form.equipment,
     question_J2XxD4: parseInt(form.trainingDays),
     question_oAkg6e_consent: true,
+    pt_token: WEBHOOK_SECRET,
   }
 }
 
@@ -90,7 +91,7 @@ export default function FormTraining() {
     try {
       await fetch(MAKE_TRAINING_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(WEBHOOK_SECRET ? { 'x-pt-token': WEBHOOK_SECRET } : {}) },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildPayload(form)),
       })
     } catch {}
