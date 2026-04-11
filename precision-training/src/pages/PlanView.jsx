@@ -373,11 +373,12 @@ export default function PlanView() {
       if (p.password !== password) { setError('Incorrect password. Please check your email.'); setLoading(false); return }
       setPlan(p)
       setUnlocked(true)
-      const parsed = p.plan_type === 'nutrition' ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
+      const _isNutPlan = p.plan_type === 'nutrition' || p.plan_type === 'glp1-nutrition' || p.plan_type === 'glp1_nutrition' || p.plan_type === 'glp1nutrition'
+      const parsed = _isNutPlan ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
       setParsedPlan(parsed)
       setTimeout(() => fetchImages(p.html_content, parsed), 100)
       // Load progress history and run suggestion engine (training plans only)
-      if (p.plan_type !== 'nutrition') {
+      if (!_isNutPlan) {
         setTimeout(() => loadAndAnalyzeProgress(slug, parsed), 800)
       }
     } catch { setError('Something went wrong. Please try again.') }
@@ -463,7 +464,8 @@ export default function PlanView() {
       body: JSON.stringify({ html_content: html }),
     })
     setPlan(prev => ({ ...prev, html_content: html }))
-    const parsed = plan?.plan_type === 'nutrition' ? parseNutritionPlan(html) : parseTrainingPlan(html)
+    const _isNutPlan2 = plan?.plan_type === 'nutrition' || plan?.plan_type === 'glp1-nutrition' || plan?.plan_type === 'glp1_nutrition' || plan?.plan_type === 'glp1nutrition'
+    const parsed = _isNutPlan2 ? parseNutritionPlan(html) : parseTrainingPlan(html)
     setParsedPlan(parsed)
   }
 
@@ -505,8 +507,9 @@ export default function PlanView() {
     await savePlan(updated); setConfirmRemove(null); showToast('Removed ✓')
   }
 
-  const isNutrition = plan?.plan_type === 'nutrition'
-  const isGlp1 = !isNutrition && /glp.?1|muscle.?guard|muscle.?preservation/i.test(plan?.html_content || '')
+  const isNutrition = plan?.plan_type === 'nutrition' || plan?.plan_type === 'glp1-nutrition' || plan?.plan_type === 'glp1_nutrition' || plan?.plan_type === 'glp1nutrition'
+  const isGlp1Nutrition = isNutrition && /glp.?1|muscle.?guard|muscle.?preservation/i.test(plan?.html_content || '')
+  const isGlp1 = isGlp1Nutrition || (!isNutrition && /glp.?1|muscle.?guard|muscle.?preservation/i.test(plan?.html_content || ''))
 
   if (!unlocked) return (
     <div className={styles.lockPage}>
