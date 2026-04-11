@@ -526,8 +526,8 @@ export default function PlanView() {
   )
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header} style={isGlp1 ? { background: '#0a1a0f', borderBottom: '1px solid rgba(109,184,138,0.2)' } : {}}>
+    <div className={`${styles.page} ${isGlp1 ? styles.glp1Theme : ''}`}>
+      <header className={styles.header} style={isGlp1 ? { background: '#060f08', borderBottom: '1px solid rgba(109,184,138,0.15)' } : {}}>
         <Link to="/" className={styles.logo}><span className={styles.gold}>Precision</span> Training</Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           <h1 className={styles.planTitle} style={isGlp1 ? { color: '#6db88a' } : {}}>

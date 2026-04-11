@@ -90,7 +90,7 @@ export default function Home() {
       <Navbar />
 
       {/* ── SCROLL HERO ──────────────────────────────────── */}
-      <HeroScroll trainingPath="/form/training" nutritionPath="/form/nutrition" glp1Path="/form/glp1" />
+      <HeroScroll trainingPath="/form/training" nutritionPath="/form/nutrition" glp1Path="/form/glp1" glp1NutritionPath="/form/glp1-nutrition" />
 
       {/* ── STATS BAR ─────────────────────────────────── */}
       <div className={styles.statsBar}>
@@ -150,73 +150,85 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── WHAT YOU GET ──────────────────────────────── */}
+      {/* ── WHAT YOU GET — GLP-1 FIRST ───────────────── */}
       <section className={styles.section}>
-        <p className={styles.eyebrow}>WHAT YOU GET</p>
-        <h2 className={styles.sectionTitle}>Three systems. <span className={styles.gold}>One goal.</span></h2>
+        <p className={styles.eyebrow} style={{ color: '#6db88a' }}>THE GLP-1 MUSCLE GUARD SYSTEM</p>
+        <h2 className={styles.sectionTitle}>Built for <span style={{ color: '#6db88a' }}>Ozempic & Wegovy</span> users.</h2>
+        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, maxWidth: 560, margin: '0 auto 48px', textAlign: 'center', lineHeight: 1.8 }}>
+          GLP-1 medications cause rapid weight loss — but up to 40% of that weight can be muscle. The GLP-1 Muscle Guard System is purpose-built to prevent that.
+        </p>
+
         <div className={styles.whatYouGet}>
-          <div className={styles.planCard}>
-            <div className={styles.planPreview}>
-              <img src="/preview-training.png" alt="Training Plan Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '10px', display: 'block' }} />
-            </div>
-            <h3>Your Personal Training Plan</h3>
-            <ul className={styles.featureList}>
-              <li><span className={styles.check}>✓</span><span>Personalized weekly split</span></li>
-              <li><span className={styles.check}>✓</span><span>Exercise selection based on your body and goals</span></li>
-              <li><span className={styles.check}>✓</span><span>Sets, reps and rest times included</span></li>
-              <li><span className={styles.check}>✓</span><span>Built-in progression system</span></li>
-              <li><span className={styles.check}>✓</span><span>Swap or add exercises anytime</span></li>
-              <li><span className={styles.check}>✓</span><span>Progress Tracker to log your weights weekly</span></li>
-              <li><span className={styles.check}>✓</span><span>Plan Insights that detect stagnation and suggest adjustments</span></li>
-              <li><span className={styles.check}>✓</span><span>AI Coach that knows your exact plan</span></li>
-              <li><span className={styles.check}>✓</span><span>Delivered as password-protected personal page</span></li>
-            </ul>
-            <Link to="/form/training" className={styles.btnFull}>
-              Get My Training Plan →
-            </Link>
-          </div>
-
-          <div className={styles.planCard}>
-            <div className={styles.planPreview}>
-              <img src="/preview-nutrition.png" alt="Nutrition Plan Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '10px', display: 'block' }} />
-            </div>
-            <h3>Your Personal Nutrition Plan</h3>
-            <ul className={styles.featureList}>
-              <li><span className={styles.check}>✓</span><span>Custom calorie and macro targets based on your body data</span></li>
-              <li><span className={styles.check}>✓</span><span>Exact meal plan with portions in grams per meal</span></li>
-              <li><span className={styles.check}>✓</span><span>Food preferences, diet type and allergies respected</span></li>
-              <li><span className={styles.check}>✓</span><span>Swap meals to fit your preferences</span></li>
-              <li><span className={styles.check}>✓</span><span>Supplement stack with dosages and timing</span></li>
-              <li><span className={styles.check}>✓</span><span>Weekly grocery list and meal prep tips</span></li>
-              <li><span className={styles.check}>✓</span><span>AI Coach that knows your exact nutrition plan</span></li>
-              <li><span className={styles.check}>✓</span><span>Delivered as password-protected personal page</span></li>
-            </ul>
-            <Link to="/form/nutrition" className={styles.btnFull}>
-              Get My Nutrition Plan →
-            </Link>
-          </div>
-
-          <div className={styles.planCard} style={{ borderColor: 'rgba(100,180,130,0.15)', background: 'rgba(100,180,130,0.03)' }}>
-            <div className={styles.planPreview} style={{ background: 'rgba(100,180,130,0.06)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <div style={{ textAlign:'center', padding:'40px 20px' }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>💊</div>
+          {/* GLP-1 Training */}
+          <div className={styles.planCard} style={{ borderColor: 'rgba(109,184,138,0.2)', background: 'linear-gradient(160deg, rgba(109,184,138,0.04) 0%, rgba(0,0,0,0) 100%)' }}>
+            <div className={styles.planPreview} style={{ background: 'rgba(109,184,138,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🏋️</div>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#6db88a' }}>GLP-1 Muscle Guard</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>Muscle Preservation Mode</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>Training Plan</div>
               </div>
             </div>
-            <h3 style={{ color: '#6db88a' }}>GLP-1 Muscle Guard Plan</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <h3 style={{ color: '#6db88a', margin: 0 }}>GLP-1 Training Plan</h3>
+              <span style={{ padding: '3px 8px', borderRadius: 12, background: 'rgba(109,184,138,0.12)', border: '1px solid rgba(109,184,138,0.3)', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: '#6db88a', whiteSpace: 'nowrap' }}>MUSCLE GUARD</span>
+            </div>
             <ul className={styles.featureList}>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Built around Ozempic, Wegovy & Mounjaro users</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3× Full-Body split — preserves muscle on calorie deficit</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Higher protein targets (1.6–2.2 g/kg)</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>30–45 min sessions — fits low-energy days</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Compound-first programming for efficient muscle signal</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Warm-up + post-workout protein prompt every session</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3× Full-Body per week — hits every muscle group 2–3x</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>30–45 min sessions — designed for low-energy days</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Compound-first programming for maximum muscle signal</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Protein targets: 1.6–2.2 g/kg bodyweight</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Low-energy day adjustment built into every session</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach aware of your medication stage</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Delivered as password-protected personal page</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Progress Tracker + Plan Insights included</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Password-protected personal page</span></li>
             </ul>
-            <Link to="/form/glp1" className={styles.btnFull} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 6px 22px rgba(100,180,130,0.2)' }}>
-              Get My GLP-1 Plan →
+            <Link to="/form/glp1" className={styles.btnFull} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 6px 22px rgba(100,180,130,0.25)' }}>
+              Get My GLP-1 Training Plan →
+            </Link>
+          </div>
+
+          {/* GLP-1 Nutrition */}
+          <div className={styles.planCard} style={{ borderColor: 'rgba(109,184,138,0.2)', background: 'linear-gradient(160deg, rgba(109,184,138,0.04) 0%, rgba(0,0,0,0) 100%)' }}>
+            <div className={styles.planPreview} style={{ background: 'rgba(109,184,138,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🥗</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#6db88a' }}>GLP-1 Muscle Guard</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>Nutrition Plan</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <h3 style={{ color: '#6db88a', margin: 0 }}>GLP-1 Nutrition Plan</h3>
+              <span style={{ padding: '3px 8px', borderRadius: 12, background: 'rgba(109,184,138,0.12)', border: '1px solid rgba(109,184,138,0.3)', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: '#6db88a', whiteSpace: 'nowrap' }}>MUSCLE GUARD</span>
+            </div>
+            <ul className={styles.featureList}>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>High-protein meals: 1.6–2.2 g/kg target built in</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Easy-to-digest food choices — anti-nausea optimized</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Leucine-rich sources to maximize muscle protein synthesis</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Exact portions per meal in grams</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Adapted to your GLP-1 stage (Starting / Maintenance etc.)</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Grocery list, meal prep tips, supplement stack</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach aware of your medication and nutrition targets</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Password-protected personal page</span></li>
+            </ul>
+            <Link to="/form/glp1-nutrition" className={styles.btnFull} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 6px 22px rgba(100,180,130,0.25)' }}>
+              Get My GLP-1 Nutrition Plan →
+            </Link>
+          </div>
+        </div>
+
+        {/* Standard plans — secondary */}
+        <div style={{ marginTop: 56, paddingTop: 40, borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+          <p style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 20 }}>Not on GLP-1 medication?</p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/form/training" style={{ padding: '11px 22px', borderRadius: 50, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', textDecoration: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,169,110,0.3)'; e.currentTarget.style.color = '#c8a96e' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
+              Standard Training Plan →
+            </Link>
+            <Link to="/form/nutrition" style={{ padding: '11px 22px', borderRadius: 50, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', textDecoration: 'none', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,169,110,0.3)'; e.currentTarget.style.color = '#c8a96e' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
+              Standard Nutrition Plan →
             </Link>
           </div>
         </div>
@@ -253,17 +265,21 @@ export default function Home() {
             </div>
           </div>
           <div className={styles.formLinks}>
+            <Link to="/form/glp1" className={styles.formLink} style={{ borderColor: 'rgba(109,184,138,0.25)', background: 'rgba(109,184,138,0.03)' }}>
+              <span className={styles.formLinkTitle} style={{ color: '#6db88a' }}>💊 GLP-1 Training Plan</span>
+              <span className={styles.formLinkSub}>Preserve muscle while on Ozempic / Wegovy →</span>
+            </Link>
+            <Link to="/form/glp1-nutrition" className={styles.formLink} style={{ borderColor: 'rgba(109,184,138,0.25)', background: 'rgba(109,184,138,0.03)' }}>
+              <span className={styles.formLinkTitle} style={{ color: '#6db88a' }}>💊 GLP-1 Nutrition Plan</span>
+              <span className={styles.formLinkSub}>High-protein, easy-to-digest, stage-optimized →</span>
+            </Link>
             <Link to="/form/training" className={styles.formLink}>
-              <span className={styles.formLinkTitle}>AI Training Plan</span>
+              <span className={styles.formLinkTitle}>Standard Training Plan</span>
               <span className={styles.formLinkSub}>Get your personalized workout program →</span>
             </Link>
             <Link to="/form/nutrition" className={styles.formLink}>
-              <span className={styles.formLinkTitle}>AI Nutrition Plan</span>
+              <span className={styles.formLinkTitle}>Standard Nutrition Plan</span>
               <span className={styles.formLinkSub}>Get your personalized meal plan →</span>
-            </Link>
-            <Link to="/form/glp1" className={styles.formLink} style={{ borderColor: 'rgba(100,180,130,0.2)' }}>
-              <span className={styles.formLinkTitle} style={{ color: '#6db88a' }}>💊 GLP-1 Muscle Guard Plan</span>
-              <span className={styles.formLinkSub}>Preserve muscle while on Ozempic / Wegovy →</span>
             </Link>
           </div>
         </div>
@@ -347,21 +363,23 @@ export default function Home() {
       <section className={styles.ctaSection}>
         <div className={styles.ctaInner}>
           <h2 className={styles.ctaTitle}>
-            Stop guessing. <span className={styles.gold}>Start growing.</span>
+            Losing weight. <span style={{ color: '#6db88a' }}>Keep the muscle.</span>
           </h2>
           <p className={styles.ctaSub}>
-            No templates. No copy-paste programs. Just precision.
+            Purpose-built for GLP-1 users. Precision-built for your body.
           </p>
           <div className={styles.heroBtns}>
-            <Link to="/form/training" className={styles.btnPrimary}>
-              Get My Training Plan →
+            <Link to="/form/glp1" className={styles.btnPrimary} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 8px 28px rgba(100,180,130,0.3)' }}>
+              💊 GLP-1 Training Plan →
             </Link>
-            <Link to="/form/nutrition" className={styles.btnSecondary}>
-              Get My Nutrition Plan →
+            <Link to="/form/glp1-nutrition" className={styles.btnSecondary} style={{ borderColor: 'rgba(109,184,138,0.35)', color: '#6db88a' }}>
+              💊 GLP-1 Nutrition Plan →
             </Link>
-            <Link to="/form/glp1" className={styles.btnSecondary} style={{ borderColor: 'rgba(100,180,130,0.35)', color: '#6db88a' }}>
-              💊 GLP-1 Muscle Guard Plan →
-            </Link>
+          </div>
+          <div style={{ marginTop: 20, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/form/training" style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: 1, textDecoration: 'none' }}>Standard Training Plan</Link>
+            <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
+            <Link to="/form/nutrition" style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: 1, textDecoration: 'none' }}>Standard Nutrition Plan</Link>
           </div>
         </div>
       </section>

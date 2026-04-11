@@ -8,6 +8,8 @@ import FormTraining from './pages/FormTraining'
 import FormNutrition from './pages/FormNutrition'
 import FormGLP1 from './pages/FormGLP1'
 
+import FormGLP1Nutrition from './pages/FormGLP1Nutrition'
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -19,6 +21,7 @@ export default function App() {
         <Route path="/form/training" element={<FormTraining />} />
         <Route path="/form/nutrition" element={<FormNutrition />} />
         <Route path="/form/glp1" element={<FormGLP1 />} />
+        <Route path="/form/glp1-nutrition" element={<FormGLP1Nutrition />} />
       </Routes>
       <Analytics />
     </BrowserRouter>
