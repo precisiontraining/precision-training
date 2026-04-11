@@ -175,17 +175,19 @@ function parseNutritionPlan(html) {
   const doc = parser.parseFromString(html, 'text/html')
   const result = { intro: '', meals: [], dailyMacros: null }
 
-  // Extract daily macros directly from macro-card divs (most reliable source)
-  const macroCards = [...doc.querySelectorAll('.macro-card, [class*="macro"]')]
-  if (macroCards.length >= 4) {
-    const nums = macroCards.map(c => parseFloat(c.textContent.replace(/[^\d.]/g, '')) || 0)
-    result.dailyMacros = { kcal: nums[0], protein: nums[1], carbs: nums[2], fats: nums[3] }
+  // Extract daily macros from Daily Nutrition Summary line (most reliable)
+  const bodyText = doc.body.textContent
+  const summaryMatch = bodyText.match(/(\d{3,5})\s*kcal[^|]*\|\s*(\d{2,4})g?\s*protein[^|]*\|\s*(\d{2,4})g?\s*carbs[^|]*\|\s*(\d{1,3})g?\s*fats/i)
+  if (summaryMatch) {
+    result.dailyMacros = { kcal: +summaryMatch[1], protein: +summaryMatch[2], carbs: +summaryMatch[3], fats: +summaryMatch[4] }
   }
-  // Fallback: parse from Daily Nutrition Summary text
+  // Fallback: macro-card divs — extract FIRST number only from each card
   if (!result.dailyMacros) {
-    const bodyText = doc.body.textContent
-    const m = bodyText.match(/(\d+)\s*kcal[^|]*\|\s*(\d+)g?\s*protein[^|]*\|\s*(\d+)g?\s*carbs[^|]*\|\s*(\d+)g?\s*fats/i)
-    if (m) result.dailyMacros = { kcal: +m[1], protein: +m[2], carbs: +m[3], fats: +m[4] }
+    const macroCards = [...doc.querySelectorAll('.macro-card, [class*="macro"]')]
+    if (macroCards.length >= 4) {
+      const nums = macroCards.map(c => { const m = c.textContent.match(/(\d{2,5})/); return m ? parseFloat(m[1]) : 0 })
+      if (nums[0] > 0) result.dailyMacros = { kcal: nums[0], protein: nums[1], carbs: nums[2], fats: nums[3] }
+    }
   }
 
   // Extract coaching intro — must be a real sentence paragraph, not table text
