@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { PLAN_CHAT_URL, SUPABASE_ANON_KEY, TALLY_TRAINING } from '../constants'
 import styles from './AICoach.module.css'
 
-const DAILY_LIMIT = 10
+const DAILY_LIMIT = 5
 const STORAGE_KEY = (slug) => `pt_coach_${slug}_${new Date().toDateString()}`
 
 // Keywords that signal the user wants a training plan (used in nutrition context)
@@ -30,12 +30,16 @@ function TrainingReferralCard() {
   )
 }
 
-export default function AICoach({ slug, isNutrition }) {
-  const initialMessage = isNutrition
+export default function AICoach({ slug, isNutrition, isGlp1 }) {
+  const initialMessage = isGlp1
+    ? "Hey! I know your GLP-1 Muscle Guard plan inside out. Ask me anything — energy dips, protein targets, exercise adjustments, or how to stay on track on your medication."
+    : isNutrition
     ? "Hey! I know your nutrition plan inside out. Ask me anything — meal swaps, your macro targets, supplement timing, or how to stay on track."
     : "Hey! I know your plan inside out. Ask me anything — substitutions, technique tips, or how to get the most out of your program."
 
-  const chips = isNutrition
+  const chips = isGlp1
+    ? ['Energy was low today — adjust?', 'How much protein do I need?', 'Can I do less sets today?']
+    : isNutrition
     ? ['Can I swap a meal?', 'What are my daily macros?', 'When should I take supplements?']
     : ['Can I substitute an exercise?', 'How much rest between sets?', 'What should I eat before training?']
 
@@ -108,7 +112,8 @@ export default function AICoach({ slug, isNutrition }) {
             {isNutrition ? 'Ask anything about your nutrition plan' : 'Ask anything about your plan'}
           </p>
         </div>
-        <div className={styles.limitBadge} style={{ color: remaining <= 3 ? '#e05555' : 'var(--gold)' }}>
+        <div className={styles.limitBadge} style={{ color: remaining <= 2 ? '#e05555' : 'var(--gold)' }}>
+          {remaining}/{DAILY_LIMIT} questions today
           {remaining}/{DAILY_LIMIT} left today
         </div>
       </div>
@@ -149,7 +154,8 @@ export default function AICoach({ slug, isNutrition }) {
 
       {limitReached ? (
         <div className={styles.limitReached}>
-          You've used all {DAILY_LIMIT} questions for today. Come back tomorrow!
+          You've used all {DAILY_LIMIT} free questions for today. Come back tomorrow!<br />
+          <span style={{ color: '#c8a96e', fontSize: 11 }}>Premium includes unlimited AI Coach access — launching soon.</span>
         </div>
       ) : (
         <div className={styles.inputRow}>

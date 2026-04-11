@@ -108,7 +108,7 @@ function SystemFlow({ flowRef }) {
         ))}
       </div>
 
-      <div className="sf-footer">No Account · No Subscription · Ready to Use</div>
+      <div className="sf-footer">Free to start · No credit card · Ready in minutes</div>
     </div>
   )
 }

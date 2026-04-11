@@ -166,6 +166,41 @@ export default function ProgressTracker({ slug, exercises }) {
       })}
 
       {toast && <div className="toast">{toast}</div>}
+
+      {/* Locked paid features */}
+      <div style={{
+        marginTop: 32, padding: '20px', borderRadius: 14,
+        background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)', marginBottom: 16 }}>
+          Premium Features
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            { icon: '📊', label: 'Muscle Preservation Trend', sub: 'Visual chart of your strength over time' },
+            { icon: '🔔', label: 'Stagnation Detection', sub: 'Auto-alerts when progress plateaus' },
+            { icon: '📄', label: 'Doctor-Ready PDF Export', sub: 'Progress report for your healthcare provider' },
+          ].map(f => (
+            <div key={f.label} style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '12px 16px', borderRadius: 10,
+              background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)',
+              opacity: 0.6,
+            }}>
+              <span style={{ fontSize: 20 }}>{f.icon}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 2 }}>{f.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>{f.sub}</div>
+              </div>
+              <span style={{
+                padding: '3px 8px', borderRadius: 10,
+                background: 'rgba(200,169,110,0.08)', border: '1px solid rgba(200,169,110,0.15)',
+                fontSize: 9, fontWeight: 700, letterSpacing: 1, color: '#c8a96e', whiteSpace: 'nowrap',
+              }}>COMING SOON</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

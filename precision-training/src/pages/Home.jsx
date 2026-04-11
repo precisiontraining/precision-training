@@ -73,7 +73,7 @@ export default function Home() {
     },
     {
       q: 'Is there a subscription or recurring charge?',
-      a: 'No. It is a one-time payment per plan. No subscription, no automatic renewal, no hidden fees.',
+      a: 'Your plan is completely free — no credit card, no subscription. You get your full personalized plan, progress tracker, and AI Coach included. A Premium tier with advanced features (unlimited swaps, stagnation detection, PDF exports, wearable sync) is coming soon for users who want more.',
     },
     {
       q: 'What information do I need to provide?',
@@ -336,6 +336,59 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ── FREE vs PREMIUM ───────────────────────────── */}
+      <section className={styles.section}>
+        <p className={styles.eyebrow}>PRICING</p>
+        <h2 className={styles.sectionTitle}>100% free to start. <span style={{ color: '#6db88a' }}>Premium coming soon.</span></h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 760, margin: '0 auto' }}>
+          {/* Free */}
+          <div style={{ padding: '28px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Free</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 20 }}>$0</div>
+            {[
+              'Full AI-generated training plan',
+              'Full AI-generated nutrition plan',
+              'GLP-1 Muscle Guard mode',
+              'Password-protected personal page',
+              '3 exercise swaps per week',
+              '5 AI Coach questions per day',
+              'Progress tracker (log weights)',
+              'Grocery list (one-time)',
+            ].map(f => (
+              <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+                <span style={{ color: '#6db88a', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>{f}</span>
+              </div>
+            ))}
+          </div>
+          {/* Premium */}
+          <div style={{ padding: '28px 24px', borderRadius: 16, background: 'rgba(200,169,110,0.04)', border: '1px solid rgba(200,169,110,0.15)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 14, right: 14, padding: '3px 10px', borderRadius: 10, background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.25)', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, color: '#c8a96e' }}>COMING SOON</div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#c8a96e', marginBottom: 8 }}>Premium</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 20 }}>$19<span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.3)' }}>/mo</span></div>
+            {[
+              'Everything in Free',
+              'Unlimited exercise & meal swaps',
+              'Unlimited AI Coach (proactive suggestions)',
+              'Advanced Plan Insights & stagnation alerts',
+              'Muscle Preservation Dashboard',
+              'Injection/med logging tied to plan',
+              'Doctor-ready PDF progress reports',
+              'Apple Health / Google Fit sync',
+              'Weekly grocery list updates',
+            ].map(f => (
+              <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
+                <span style={{ color: '#c8a96e', fontWeight: 700, fontSize: 13, flexShrink: 0 }}>✓</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>{f}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: 0.5 }}>
+          Generate your free plan now. Premium notified at launch — no commitment.
+        </p>
       </section>
 
       {/* ── FAQ ───────────────────────────────────────── */}

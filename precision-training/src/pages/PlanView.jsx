@@ -5,7 +5,9 @@ import MacroTracker from '../components/MacroTracker'
 import AICoach from '../components/AICoach'
 import SuggestionPopup from '../components/SuggestionPopup'
 import ExerciseSearchInput from '../components/ExerciseSearchInput'
+import UpgradePrompt from '../components/UpgradePrompt'
 import { analyzeProgress, isSuggestionDismissed } from '../utils/analyzeProgress'
+import { canSwap, swapsRemaining, incrementSwap } from '../utils/freeTier'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, EXERCISE_GIF_URL, PLAN_CHAT_URL, DAYS } from '../constants'
 import styles from './PlanView.module.css'
 
@@ -380,6 +382,8 @@ export default function PlanView() {
   const [confirmRemove, setConfirmRemove] = useState(null)
   const [parsedPlan, setParsedPlan] = useState(null)
   const [activeSuggestion, setActiveSuggestion] = useState(null)
+  const [swapLimitModal, setSwapLimitModal] = useState(false)
+  const [lockedFeatureModal, setLockedFeatureModal] = useState(null)
 
   async function unlock() {
     setLoading(true); setError('')
@@ -490,12 +494,14 @@ export default function PlanView() {
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500) }
 
   async function openSwap(exercise) {
+    if (!canSwap(slug)) { setSwapLimitModal(true); return }
     setSwapModal({ item: exercise.name, newName: '', sets: exercise.sets, reps: exercise.reps, rest: exercise.rest })
     setSuggestions([])
   }
 
   async function applySwap() {
     if (!swapModal?.newName) return
+    incrementSwap(slug)
     const updated = plan.html_content.replace(
       new RegExp(swapModal.item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
       swapModal.newName
@@ -574,7 +580,30 @@ export default function PlanView() {
             {t === 'plan' ? 'My Plan' : t === 'tracker' ? 'Progress Tracker' : 'AI Coach'}
           </button>
         ))}
+        <button className={styles.tab} style={{ color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
+          onClick={() => setLockedFeatureModal('Plan Insights & Stagnation Detection')}>
+          Plan Insights <UpgradePrompt variant="inline" />
+        </button>
       </div>
+
+      {/* Swap limit info bar */}
+      {!isNutrition && unlocked && (() => {
+        const rem = swapsRemaining(slug)
+        return (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+            padding: '6px 20px', gap: 8,
+            fontSize: 10, color: rem <= 1 ? '#e06060' : 'rgba(255,255,255,0.25)',
+            letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif',
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+            {rem} swap{rem !== 1 ? 's' : ''} left this week
+            {rem === 0 && <span style={{ color: '#c8a96e', marginLeft: 4 }}>· Premium = unlimited</span>}
+          </div>
+        )
+      })()}
 
       <div className={styles.content}>
         {tab === 'plan' && parsedPlan && (
@@ -588,7 +617,7 @@ export default function PlanView() {
             ? <MacroTracker slug={slug} dailyTargets={getDailyTargets(parsedPlan)} />
             : <ProgressTracker slug={slug} exercises={extractExercises(plan?.html_content)} />
         )}
-        {tab === 'coach' && <AICoach slug={slug} isNutrition={isNutrition} />}
+        {tab === 'coach' && <AICoach slug={slug} isNutrition={isNutrition} isGlp1={isGlp1} />}
       </div>
 
       {/* SWAP MODAL */}
@@ -671,6 +700,33 @@ export default function PlanView() {
             setActiveSuggestion(null)
             showToast(`✓ ${s.action}`)
           }}
+        />
+      )}
+
+      {/* Swap limit reached */}
+      {swapLimitModal && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setSwapLimitModal(false)}>
+          <div className="modal" style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 36, marginBottom: 16 }}>🔄</div>
+            <h3 style={{ marginBottom: 8 }}>Weekly swap limit reached</h3>
+            <p style={{ color: 'var(--gray)', fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>
+              You've used all 3 free swaps this week. Your limit resets every Monday.<br /><br />
+              <span style={{ color: '#c8a96e' }}>Premium</span> includes unlimited exercise and meal swaps — launching soon.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn-cancel" onClick={() => setSwapLimitModal(false)}>Got it</button>
+              <button className="btn-confirm" style={{ opacity: 0.5, cursor: 'default' }} disabled>Upgrade (Coming Soon)</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Locked paid feature modal */}
+      {lockedFeatureModal && (
+        <UpgradePrompt
+          variant="modal"
+          feature={lockedFeatureModal}
+          onDismiss={() => setLockedFeatureModal(null)}
         />
       )}
     </div>
