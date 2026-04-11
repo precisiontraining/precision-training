@@ -173,7 +173,20 @@ function parseTrainingPlan(html) {
 function parseNutritionPlan(html) {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, 'text/html')
-  const result = { intro: '', meals: [] }
+  const result = { intro: '', meals: [], dailyMacros: null }
+
+  // Extract daily macros directly from macro-card divs (most reliable source)
+  const macroCards = [...doc.querySelectorAll('.macro-card, [class*="macro"]')]
+  if (macroCards.length >= 4) {
+    const nums = macroCards.map(c => parseFloat(c.textContent.replace(/[^\d.]/g, '')) || 0)
+    result.dailyMacros = { kcal: nums[0], protein: nums[1], carbs: nums[2], fats: nums[3] }
+  }
+  // Fallback: parse from Daily Nutrition Summary text
+  if (!result.dailyMacros) {
+    const bodyText = doc.body.textContent
+    const m = bodyText.match(/(\d+)\s*kcal[^|]*\|\s*(\d+)g?\s*protein[^|]*\|\s*(\d+)g?\s*carbs[^|]*\|\s*(\d+)g?\s*fats/i)
+    if (m) result.dailyMacros = { kcal: +m[1], protein: +m[2], carbs: +m[3], fats: +m[4] }
+  }
 
   // Extract coaching intro — must be a real sentence paragraph, not table text
   const allEls = [...doc.body.querySelectorAll('p, div')]
@@ -324,7 +337,10 @@ function parseNutritionPlan(html) {
 
 // ── EXTRACT DAILY MACRO TARGETS FROM PARSED NUTRITION PLAN ───────────────────
 function getDailyTargets(parsedPlan) {
-  if (!parsedPlan?.meals?.length) return null
+  if (!parsedPlan) return null
+  // Prefer directly parsed macro cards (exact GPT output)
+  if (parsedPlan.dailyMacros?.kcal) return parsedPlan.dailyMacros
+  if (!parsedPlan.meals?.length) return null
   let kcal = 0, protein = 0, carbs = 0, fats = 0
   parsedPlan.meals.forEach(meal => {
     // Use first option only to avoid multiplying by number of options
@@ -793,6 +809,7 @@ function NutritionView({ parsed }) {
   const meal = meals[activeMeal]
   const options = meal.options || []
   const option = options[Math.min(activeOption, options.length - 1)] || options[0]
+  const dm = parsed.dailyMacros
 
   function shortLabel(title) {
     const clean = title.replace(/^meal\s*\d*\s*[-\u2013:]*\s*/i, '').trim()
@@ -812,6 +829,28 @@ function NutritionView({ parsed }) {
             </svg>
           </div>
           <p className={styles.coachingIntroText}>{parsed.intro}</p>
+        </div>
+      )}
+
+      {/* Daily Macro Summary */}
+      {dm && (
+        <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:24 }}>
+          {[
+            { label:'Calories', value:`${dm.kcal} kcal`, color:'#6db88a' },
+            { label:'Protein',  value:`${dm.protein}g`,  color:'#6db88a' },
+            { label:'Carbs',    value:`${dm.carbs}g`,    color:'#6db88a' },
+            { label:'Fats',     value:`${dm.fats}g`,     color:'#6db88a' },
+          ].map(m => (
+            <div key={m.label} style={{
+              flex:'1 1 100px', minWidth:90,
+              background:'rgba(109,184,138,0.07)',
+              border:'1px solid rgba(109,184,138,0.2)',
+              borderRadius:10, padding:'10px 14px',
+            }}>
+              <div style={{ fontSize:10, fontWeight:600, letterSpacing:1.5, textTransform:'uppercase', color:'rgba(255,255,255,0.35)', marginBottom:4 }}>{m.label}</div>
+              <div style={{ fontSize:18, fontWeight:800, color:m.color }}>{m.value}</div>
+            </div>
+          ))}
         </div>
       )}
 
