@@ -367,7 +367,13 @@ function getDailyTargets(parsedPlan) {
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export default function PlanView() {
   const { slug } = useParams()
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState(() => {
+    // Restore remembered password for this slug from sessionStorage
+    try { return sessionStorage.getItem(`pt_pw_${slug}`) || '' } catch { return '' }
+  })
+  const [rememberMe, setRememberMe] = useState(() => {
+    try { return !!sessionStorage.getItem(`pt_pw_${slug}`) } catch { return false }
+  })
   const [unlocked, setUnlocked] = useState(false)
   const [error, setError] = useState('')
   const [plan, setPlan] = useState(null)
@@ -384,22 +390,58 @@ export default function PlanView() {
   const [activeSuggestion, setActiveSuggestion] = useState(null)
   const [swapLimitModal, setSwapLimitModal] = useState(false)
   const [lockedFeatureModal, setLockedFeatureModal] = useState(null)
+  const [unlockAttempts, setUnlockAttempts] = useState(0)
+  const [unlockCooldown, setUnlockCooldown] = useState(false)
 
-  async function unlock() {
+  // Auto-unlock if password remembered
+  useEffect(() => {
+    const saved = sessionStorage.getItem(`pt_pw_${slug}`)
+    if (saved) unlock(saved)
+  }, [slug])
+
+  async function unlock(savedPw) {
+    const pw = savedPw || password
+    if (!pw) return
+
+    // Rate limiting: max 5 wrong attempts → 60s cooldown
+    if (unlockCooldown) { setError('Too many attempts. Please wait 60 seconds.'); return }
+    if (!savedPw) {
+      const next = unlockAttempts + 1
+      setUnlockAttempts(next)
+      if (next >= 5) {
+        setUnlockCooldown(true)
+        setError('Too many attempts. Please wait 60 seconds.')
+        setTimeout(() => { setUnlockCooldown(false); setUnlockAttempts(0); setError('') }, 60000)
+        return
+      }
+    }
+
     setLoading(true); setError('')
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/plans?slug=eq.${slug}&select=*`, { headers: HEADERS })
+      // Only fetch needed fields — never expose email/respondentId to the client
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/plans?slug=eq.${encodeURIComponent(slug)}&select=slug,password,html_content,plan_type`,
+        { headers: HEADERS }
+      )
       const data = await res.json()
       if (!data?.length) { setError('Plan not found.'); setLoading(false); return }
       const p = data[0]
-      if (p.password !== password) { setError('Incorrect password. Please check your email.'); setLoading(false); return }
+      if (p.password !== pw) {
+        setError('Incorrect password. Please check your email.')
+        setLoading(false)
+        return
+      }
+      // Save or clear password from sessionStorage based on rememberMe
+      try {
+        if (rememberMe || savedPw) sessionStorage.setItem(`pt_pw_${slug}`, pw)
+        else sessionStorage.removeItem(`pt_pw_${slug}`)
+      } catch {}
       setPlan(p)
       setUnlocked(true)
       const _isNutPlan = p.plan_type === 'nutrition' || p.plan_type === 'glp1-nutrition' || p.plan_type === 'glp1_nutrition' || p.plan_type === 'glp1nutrition'
       const parsed = _isNutPlan ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
       setParsedPlan(parsed)
       setTimeout(() => fetchImages(p.html_content, parsed), 100)
-      // Load progress history and run suggestion engine (training plans only)
       if (!_isNutPlan) {
         setTimeout(() => loadAndAnalyzeProgress(slug, parsed), 800)
       }
@@ -542,10 +584,28 @@ export default function PlanView() {
         <h1>Your Plan is Ready</h1>
         <p>Enter the password from your email to access your personalized plan.</p>
         <input className={styles.lockInput} type="password" placeholder="Enter your password"
-          value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && unlock()} />
+          value={password} onChange={e => setPassword(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && unlock()}
+          disabled={unlockCooldown} />
         {error && <div className={styles.lockError}>{error}</div>}
-        <button className={styles.lockBtn} onClick={unlock} disabled={loading}>
-          {loading ? 'Loading…' : 'View My Plan →'}
+        {/* Remember me */}
+        <label style={{
+          display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+          fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '4px 0 12px', userSelect: 'none',
+        }}>
+          <div onClick={() => setRememberMe(r => !r)} style={{
+            width: 18, height: 18, borderRadius: 5,
+            border: `1.5px solid ${rememberMe ? '#c8a96e' : 'rgba(255,255,255,0.2)'}`,
+            background: rememberMe ? 'rgba(200,169,110,0.15)' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            transition: 'all 0.2s',
+          }}>
+            {rememberMe && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#c8a96e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          </div>
+          <span onClick={() => setRememberMe(r => !r)}>Remember me on this device</span>
+        </label>
+        <button className={styles.lockBtn} onClick={() => unlock()} disabled={loading || unlockCooldown}>
+          {loading ? 'Loading…' : unlockCooldown ? 'Too many attempts — wait 60s' : 'View My Plan →'}
         </button>
         <Link to="/" className={styles.lockBack}>← Back to Precision Training</Link>
       </div>

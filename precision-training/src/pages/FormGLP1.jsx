@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { MAKE_TRAINING_WEBHOOK } from '../constants'
+import { MAKE_TRAINING_WEBHOOK , WEBHOOK_SECRET } from '../constants'
 import styles from './Form.module.css'
 
 const LOCATION_OPTIONS = [
@@ -95,7 +95,7 @@ export default function FormGLP1() {
     try {
       await fetch(MAKE_TRAINING_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(WEBHOOK_SECRET ? { 'x-pt-token': WEBHOOK_SECRET } : {}) },
         body: JSON.stringify(buildPayload(form)),
       })
     } catch {}

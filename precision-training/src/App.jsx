@@ -9,6 +9,7 @@ import FormNutrition from './pages/FormNutrition'
 import FormGLP1 from './pages/FormGLP1'
 
 import FormGLP1Nutrition from './pages/FormGLP1Nutrition'
+import Admin from './pages/Admin'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/form/nutrition" element={<FormNutrition />} />
         <Route path="/form/glp1" element={<FormGLP1 />} />
         <Route path="/form/glp1-nutrition" element={<FormGLP1Nutrition />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
       <Analytics />
     </BrowserRouter>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { PLAN_CHAT_URL, SUPABASE_ANON_KEY, TALLY_TRAINING } from '../constants'
+import { PLAN_CHAT_URL, SUPABASE_ANON_KEY } from '../constants'
 import styles from './AICoach.module.css'
 
 const DAILY_LIMIT = 5
@@ -19,9 +19,7 @@ function TrainingReferralCard() {
         Precision Training builds fully personalized workout programs — tailored to your body, goals and schedule. Same quality as your nutrition plan, delivered in minutes.
       </p>
       <a
-        href={TALLY_TRAINING}
-        target="_blank"
-        rel="noreferrer"
+        href="/form/training"
         className={styles.referralBtn}
       >
         Get My Training Plan →

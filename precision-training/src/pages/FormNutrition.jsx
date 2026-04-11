@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { MAKE_NUTRITION_WEBHOOK } from '../constants'
+import { MAKE_NUTRITION_WEBHOOK , WEBHOOK_SECRET } from '../constants'
 import styles from './Form.module.css'
 
 const LOCATION_OPTIONS_NUTRITION = [
@@ -100,7 +100,7 @@ export default function FormNutrition() {
     try {
       await fetch(MAKE_NUTRITION_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(WEBHOOK_SECRET ? { 'x-pt-token': WEBHOOK_SECRET } : {}) },
         body: JSON.stringify(buildPayload(form)),
       })
     } catch {}
