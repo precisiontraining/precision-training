@@ -506,6 +506,7 @@ export default function PlanView() {
   }
 
   const isNutrition = plan?.plan_type === 'nutrition'
+  const isGlp1 = !isNutrition && /glp.?1|muscle.?guard|muscle.?preservation/i.test(plan?.html_content || '')
 
   if (!unlocked) return (
     <div className={styles.lockPage}>
@@ -526,9 +527,24 @@ export default function PlanView() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
+      <header className={styles.header} style={isGlp1 ? { background: '#0a1a0f', borderBottom: '1px solid rgba(109,184,138,0.2)' } : {}}>
         <Link to="/" className={styles.logo}><span className={styles.gold}>Precision</span> Training</Link>
-        <h1 className={styles.planTitle}>{isNutrition ? 'Your Personal Nutrition Plan' : 'Your Personal Training Plan'}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <h1 className={styles.planTitle} style={isGlp1 ? { color: '#6db88a' } : {}}>
+            {isNutrition ? 'Your Personal Nutrition Plan' : isGlp1 ? 'GLP-1 Muscle Guard Plan' : 'Your Personal Training Plan'}
+          </h1>
+          {isGlp1 && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '4px 12px', borderRadius: 20,
+              background: 'rgba(109,184,138,0.12)', border: '1px solid rgba(109,184,138,0.35)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
+              color: '#6db88a', whiteSpace: 'nowrap',
+            }}>
+              💊 Muscle Preservation Mode
+            </span>
+          )}
+        </div>
       </header>
 
       <div className={styles.tabs}>
@@ -543,7 +559,7 @@ export default function PlanView() {
         {tab === 'plan' && parsedPlan && (
           isNutrition
             ? <NutritionView parsed={parsedPlan} />
-            : <TrainingView parsed={parsedPlan} images={images} getImage={getImage}
+            : <TrainingView parsed={parsedPlan} images={images} getImage={getImage} isGlp1={isGlp1}
                 onSwap={openSwap} onAdd={openAdd} onRemove={name => setConfirmRemove(name)} />
         )}
         {tab === 'tracker' && (
@@ -674,26 +690,28 @@ function ExerciseFallback({ name }) {
   )
 }
 // ── TRAINING VIEW ─────────────────────────────────────────────────────────────
-function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
+function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp1 }) {
   const [activeDay, setActiveDay] = useState(0)
   const days = parsed.days || []
   if (!days.length) return <div className={styles.empty}>No workout data found in this plan.</div>
 
   const day = days[activeDay]
+  const accent = isGlp1 ? '#6db88a' : 'var(--gold)'
+  const accentBg = isGlp1 ? 'rgba(109,184,138,0.1)' : 'rgba(200,169,110,0.1)'
+  const accentBorder = isGlp1 ? 'rgba(109,184,138,0.35)' : 'rgba(200,169,110,0.25)'
 
   return (
     <div className={styles.trainingView}>
       {/* Day selector */}
       <div className={styles.dayTabs}>
         {days.map((d, i) => {
-          // Title is already cleaned by parser (e.g. "Upper Body", "Push Day", "Chest & Triceps")
-          // For tab label: use first 2 words max to keep tabs compact
           const words = d.title.split(' ')
           const label = words.length > 2 ? words[0] + ' ' + words[1] : d.title
           const sub = words.length > 2 ? words.slice(2).join(' ') : ''
           return (
             <button key={i} className={`${styles.dayTab} ${activeDay === i ? styles.dayTabActive : ''}`}
-              onClick={() => setActiveDay(i)}>
+              onClick={() => setActiveDay(i)}
+              style={activeDay === i ? { borderColor: accent, color: accent, background: accentBg } : {}}>
               <span className={styles.dayTabLabel}>{label}</span>
               {sub && <span className={styles.dayTabSub}>{sub}</span>}
             </button>
@@ -704,16 +722,26 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
       {/* Active day */}
       <div className={styles.dayContent}>
         <div className={styles.dayHeader}>
-          <h2 className={styles.dayTitle}>{day.title}</h2>
+          <h2 className={styles.dayTitle} style={isGlp1 ? { color: '#6db88a' } : {}}>{day.title}</h2>
           <span className={styles.dayCount}>{day.exercises.length} exercises</span>
         </div>
+
+        {isGlp1 && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8, marginBottom: 16,
+            background: 'rgba(109,184,138,0.06)', border: '1px solid rgba(109,184,138,0.2)',
+            fontSize: 11, color: '#6db88a', fontStyle: 'italic', lineHeight: 1.6,
+          }}>
+            Energy low from meds? Drop 1 set per exercise or add 30s extra rest. Do not skip — showing up matters more than perfect reps.
+          </div>
+        )}
 
         <div className={styles.exerciseList}>
           {day.exercises.map((ex, i) => {
             const img = getImage(ex.name)
             return (
               <div key={i} className={styles.exerciseCard}>
-                <div className={styles.exerciseNum}>{String(i + 1).padStart(2, '0')}</div>
+                <div className={styles.exerciseNum} style={isGlp1 ? { color: '#6db88a' } : {}}>{String(i + 1).padStart(2, '0')}</div>
                 <div className={styles.exerciseImg}>
                   {img
                     ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => e.target.style.display='none'} />
@@ -742,7 +770,8 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove }) {
           })}
         </div>
 
-        <button className={styles.addExBtn} onClick={() => onAdd(day.title)}>
+        <button className={styles.addExBtn} onClick={() => onAdd(day.title)}
+          style={isGlp1 ? { borderColor: accentBorder, color: accent } : {}}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Exercise
         </button>
