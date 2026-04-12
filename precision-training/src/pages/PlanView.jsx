@@ -177,19 +177,36 @@ function parseNutritionPlan(html) {
   const doc = parser.parseFromString(html, 'text/html')
   const result = { intro: '', meals: [], dailyMacros: null }
 
-  // Extract daily macros from Daily Nutrition Summary line (most reliable)
-  const bodyText = doc.body.textContent
-  const summaryMatch = bodyText.match(/(\d{3,5})\s*kcal[^|]*\|\s*(\d{2,4})g?\s*protein[^|]*\|\s*(\d{2,4})g?\s*carbs[^|]*\|\s*(\d{1,3})g?\s*fats/i)
-  if (summaryMatch) {
-    result.dailyMacros = { kcal: +summaryMatch[1], protein: +summaryMatch[2], carbs: +summaryMatch[3], fats: +summaryMatch[4] }
-  }
-  // Fallback: macro-card divs — extract FIRST number only from each card
-  if (!result.dailyMacros) {
-    const macroCards = [...doc.querySelectorAll('.macro-card, [class*="macro"]')]
-    if (macroCards.length >= 4) {
-      const nums = macroCards.map(c => { const m = c.textContent.match(/(\d{2,5})/); return m ? parseFloat(m[1]) : 0 })
-      if (nums[0] > 0) result.dailyMacros = { kcal: nums[0], protein: nums[1], carbs: nums[2], fats: nums[3] }
+  // Extract daily macros — try multiple strategies
+  // Strategy 1: .macro-value divs (new HTML format)
+  const macroValues = [...doc.querySelectorAll('.macro-value')]
+  if (macroValues.length >= 4) {
+    const nums = macroValues.map(el => parseFloat(el.textContent.replace(/[^\d.]/g, '')) || 0)
+    if (nums[0] > 500) { // sanity check: calories must be > 500
+      result.dailyMacros = { kcal: nums[0], protein: nums[1], carbs: nums[2], fats: nums[3] }
     }
+  }
+  // Strategy 2: Summary table with Calories/Protein/Carbs/Fats rows
+  if (!result.dailyMacros) {
+    const rows = [...doc.querySelectorAll('table tr')]
+    let kcal = 0, protein = 0, carbs = 0, fats = 0
+    rows.forEach(row => {
+      const cells = [...row.querySelectorAll('td')].map(c => c.textContent.trim())
+      if (cells.length >= 2) {
+        const val = parseFloat(cells[1].replace(/[^\d.]/g, '')) || 0
+        if (/calori|kcal/i.test(cells[0])) kcal = val
+        if (/protein/i.test(cells[0])) protein = val
+        if (/carb/i.test(cells[0])) carbs = val
+        if (/fat/i.test(cells[0])) fats = val
+      }
+    })
+    if (kcal > 500) result.dailyMacros = { kcal, protein, carbs, fats }
+  }
+  // Strategy 3: inline summary text with | separators
+  if (!result.dailyMacros) {
+    const bodyText = doc.body.textContent
+    const m = bodyText.match(/(\d{3,5})\s*kcal[^|]*\|\s*(\d{2,4})g?\s*protein[^|]*\|\s*(\d{2,4})g?\s*carbs[^|]*\|\s*(\d{1,3})g?\s*fats/i)
+    if (m) result.dailyMacros = { kcal: +m[1], protein: +m[2], carbs: +m[3], fats: +m[4] }
   }
 
   // Extract coaching intro — must be a real sentence paragraph, not table text
@@ -214,10 +231,62 @@ function parseNutritionPlan(html) {
     return /breakfast|lunch|dinner|snack|pre.?workout|post.?workout|meal\s*\d/i.test(text)
   }
   function isOptionHeading(text) {
-    return /option\s*[abc1-3]|simple|standard|exciting|quick|classic|advanced|variation/i.test(text)
+    // Matches: "Option A", "Option B: ...", "Option A - Light", "Light & Easy", "Balanced", "High-Protein", etc.
+    return /option\s*[abc1-3]|^(light|easy|balanced|standard|exciting|quick|classic|high.?protein|simple|variation)/i.test(text)
   }
   function isSummaryHeading(text) {
-    return /daily total|nutrition summary|total summary|daily summary|overview/i.test(text)
+    return /daily total|nutrition summary|total summary|daily summary|overview|supplement|hydration|meal prep|grocery/i.test(text)
+  }
+
+  // ── Extract daily macro targets from the plan's summary section ────────────
+  // This handles the case where GPT renders macro cards/summary at the top
+  const allTables = [...doc.querySelectorAll('table')]
+  for (const tbl of allTables) {
+    const text = tbl.textContent.toLowerCase()
+    // Look for a summary table with "daily" context
+    const prevEl = tbl.previousElementSibling
+    const prevText = (prevEl?.textContent || '').toLowerCase()
+    if (/daily total|nutrition summary|daily summary/i.test(prevText) || /daily.*total|total.*daily/i.test(text)) {
+      const rows = [...tbl.querySelectorAll('tr')]
+      rows.forEach(row => {
+        const cells = [...row.querySelectorAll('td,th')].map(c => c.textContent.trim().toLowerCase())
+        // Look for a row that has kcal/calories value
+        if (cells.some(c => /calor|kcal/.test(c)) && cells.some(c => /protein/.test(c))) {
+          // Find numeric values in this row
+          const nums = cells.map(c => parseFloat(c)).filter(n => !isNaN(n) && n > 0)
+          if (nums.length >= 4) {
+            result.dailyMacros = { kcal: nums[0], protein: nums[1], carbs: nums[2], fats: nums[3] }
+          }
+        }
+      })
+      if (result.dailyMacros) break
+    }
+  }
+
+  // Also try extracting from macro card elements (div-based macro display)
+  if (!result.dailyMacros) {
+    const macroLabels = ['calorie', 'protein', 'carb', 'fat']
+    const macroVals = {}
+    doc.querySelectorAll('div, span, p').forEach(el => {
+      const label = el.textContent.toLowerCase().trim()
+      macroLabels.forEach(m => {
+        if (label.startsWith(m) || label === m + 's') {
+          const nextEl = el.nextElementSibling || el.parentElement?.nextElementSibling
+          if (nextEl) {
+            const val = parseFloat(nextEl.textContent)
+            if (!isNaN(val) && val > 0) macroVals[m] = val
+          }
+        }
+      })
+    })
+    if (macroVals.calorie && macroVals.protein) {
+      result.dailyMacros = {
+        kcal: macroVals.calorie,
+        protein: macroVals.protein,
+        carbs: macroVals.carb || 0,
+        fats: macroVals.fat || 0,
+      }
+    }
   }
 
   function saveOption() {
@@ -335,6 +404,36 @@ function parseNutritionPlan(html) {
   })
 
   saveMeal()
+
+  // ── Extract extras: supplement, hydration, tips, grocery ──────────────────
+  const extras = { supplement: '', hydration: '', tips: [], grocery: { proteins: '', carbs: '', fats: '' } }
+  const allDivs = [...doc.querySelectorAll('.supplement-list, .hydration, .tips, .grocery-list')]
+  allDivs.forEach(el => {
+    const cls = el.className || ''
+    if (/supplement/i.test(cls)) extras.supplement = el.textContent.trim().replace(/^GLP-1 Supplement Stack[:\s]*/i, '').trim()
+    if (/hydration/i.test(cls)) extras.hydration = el.textContent.trim().replace(/^Hydration[:\s]*/i, '').trim()
+    if (/tips/i.test(cls)) extras.tips = [...el.querySelectorAll('li')].map(li => li.textContent.trim()).filter(Boolean)
+    if (/grocery/i.test(cls)) {
+      const sections = [...el.querySelectorAll('div')]
+      sections.forEach(s => {
+        const h = s.querySelector('h4')?.textContent?.toLowerCase() || ''
+        const txt = s.textContent.replace(s.querySelector('h4')?.textContent || '', '').trim()
+        if (/protein/i.test(h)) extras.grocery.proteins = txt
+        else if (/carb/i.test(h)) extras.grocery.carbs = txt
+        else if (/fat|veg/i.test(h)) extras.grocery.fats = txt
+      })
+    }
+  })
+  // Fallback: parse from plain text sections if divs not found
+  if (!extras.supplement) {
+    const bodyText = doc.body.textContent
+    const supMatch = bodyText.match(/GLP-1 Supplement Stack[:\s]+([^\n]+(?:\n(?![A-Z])[^\n]+)*)/i)
+    if (supMatch) extras.supplement = supMatch[1].trim()
+    const hydMatch = bodyText.match(/Hydration[:\s]+([^\n]+)/i)
+    if (hydMatch) extras.hydration = hydMatch[1].trim()
+  }
+  result.extras = extras
+
   return result
 }
 
@@ -1060,6 +1159,56 @@ function NutritionView({ parsed }) {
           </>
         )}
       </div>
+
+      {/* ── Extras: Supplement / Hydration / Tips / Grocery ── */}
+      {parsed.extras && (
+        <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {parsed.extras.supplement && (
+            <div style={{ background: 'rgba(109,184,138,0.05)', border: '1px solid rgba(109,184,138,0.15)', borderRadius: 10, padding: '16px 20px' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#6db88a', marginBottom: 8 }}>💊 GLP-1 Supplement Stack</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7 }}>{parsed.extras.supplement}</div>
+            </div>
+          )}
+
+          {parsed.extras.hydration && (
+            <div style={{ background: 'rgba(109,184,138,0.05)', border: '1px solid rgba(109,184,138,0.15)', borderRadius: 10, padding: '16px 20px' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#6db88a', marginBottom: 8 }}>💧 Hydration</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7 }}>{parsed.extras.hydration}</div>
+            </div>
+          )}
+
+          {parsed.extras.tips?.length > 0 && (
+            <div style={{ background: 'rgba(200,169,110,0.04)', border: '1px solid rgba(200,169,110,0.15)', borderRadius: 10, padding: '16px 20px' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#c8a96e', marginBottom: 12 }}>📋 GLP-1 Meal Prep Tips</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {parsed.extras.tips.map((tip, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 10, fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
+                    <span style={{ color: '#c8a96e', fontWeight: 700, flexShrink: 0 }}>{String(i+1).padStart(2,'0')}</span>
+                    <span>{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(parsed.extras.grocery?.proteins || parsed.extras.grocery?.carbs || parsed.extras.grocery?.fats) && (
+            <div style={{ background: 'rgba(109,184,138,0.05)', border: '1px solid rgba(109,184,138,0.15)', borderRadius: 10, padding: '16px 20px' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#6db88a', marginBottom: 12 }}>🛒 Grocery List</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                {[{label:'Proteins', val: parsed.extras.grocery.proteins, color:'#6db88a'}, {label:'Carbs', val: parsed.extras.grocery.carbs, color:'#c8a96e'}, {label:'Fats & Veg', val: parsed.extras.grocery.fats, color:'rgba(200,169,110,0.7)'}].map(g => g.val ? (
+                  <div key={g.label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 14px' }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: g.color, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>{g.label}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>{g.val}</div>
+                  </div>
+                ) : null)}
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+
     </div>
   )
 }
