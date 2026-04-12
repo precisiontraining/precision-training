@@ -142,6 +142,10 @@ export default function FormGLP1() {
             <div className={styles.glpInfoTitle}>Muscle Preservation Mode</div>
             Your plan will default to 3× Full-Body sessions per week with compound-first programming, higher protein targets, and 30–45 min session limits — optimized for GLP-1 users.
           </div>
+          <div className={styles.glpInfo} style={{ marginTop: 16, borderColor: 'rgba(220,80,80,0.2)', background: 'rgba(220,80,80,0.04)' }}>
+            <div className={styles.glpInfoTitle} style={{ color: 'rgba(220,80,80,0.7)' }}>⚕️ Medical Disclaimer</div>
+            This plan is for informational purposes only and does not constitute medical advice. Always consult your prescribing physician before starting a new exercise or nutrition program while on medication.
+          </div>
           <div className={styles.fields} style={{ marginTop: 20 }}>
             <div>
               <label className={styles.label}>First Name</label>

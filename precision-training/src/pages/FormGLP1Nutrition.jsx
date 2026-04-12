@@ -152,6 +152,10 @@ export default function FormGLP1Nutrition() {
             <div className={styles.glpInfoTitle}>GLP-1 Nutrition Mode</div>
             High protein (1.6–2.2g/kg), easy-to-digest meals, anti-nausea food choices, leucine-rich sources to signal muscle retention — all optimized for your stage.
           </div>
+          <div className={styles.glpInfo} style={{ marginTop: 16, borderColor: 'rgba(220,80,80,0.2)', background: 'rgba(220,80,80,0.04)' }}>
+            <div className={styles.glpInfoTitle} style={{ color: 'rgba(220,80,80,0.7)' }}>⚕️ Medical Disclaimer</div>
+            This plan is for informational purposes only and does not constitute medical advice. Always consult your prescribing physician before starting a new exercise or nutrition program while on medication.
+          </div>
           <div className={styles.fields} style={{ marginTop: 20 }}>
             <div>
               <label className={styles.label}>First Name</label>

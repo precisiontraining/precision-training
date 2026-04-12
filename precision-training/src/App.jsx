@@ -10,6 +10,7 @@ import FormGLP1 from './pages/FormGLP1'
 
 import FormGLP1Nutrition from './pages/FormGLP1Nutrition'
 import Admin from './pages/Admin'
+import Terms from './pages/Terms'
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/plan/:slug" element={<PlanView />} />
         <Route path="/impressum" element={<Impressum />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/form/training" element={<FormTraining />} />
         <Route path="/form/nutrition" element={<FormNutrition />} />
         <Route path="/form/glp1" element={<FormGLP1 />} />

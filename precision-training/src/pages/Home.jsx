@@ -178,8 +178,9 @@ export default function Home() {
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Compound-first programming for maximum muscle signal</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Protein targets: 1.6–2.2 g/kg bodyweight</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Low-energy day adjustment built into every session</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach aware of your medication stage</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Progress Tracker + Plan Insights included</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3 exercise swaps per week (free tier)</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Progress Tracker — log weights, view history</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach — 5 questions/day, knows your plan</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Password-protected personal page</span></li>
             </ul>
             <Link to="/form/glp1" className={styles.btnFull} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 6px 22px rgba(100,180,130,0.25)' }}>
@@ -207,7 +208,8 @@ export default function Home() {
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Exact portions per meal in grams</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Adapted to your GLP-1 stage (Starting / Maintenance etc.)</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Grocery list, meal prep tips, supplement stack</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach aware of your medication and nutrition targets</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3 meal swaps per week (free tier)</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>AI Coach — 5 questions/day, knows your nutrition targets</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Password-protected personal page</span></li>
             </ul>
             <Link to="/form/glp1-nutrition" className={styles.btnFull} style={{ background: 'linear-gradient(135deg,#4a9e68,#6db88a)', boxShadow: '0 6px 22px rgba(100,180,130,0.25)' }}>
@@ -338,6 +340,73 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── SCIENCE BEHIND IT ─────────────────────────── */}
+      <section className={styles.section}>
+        <p className={styles.eyebrow}>THE SCIENCE</p>
+        <h2 className={styles.sectionTitle}>Built on <span className={styles.gold}>peer-reviewed research.</span></h2>
+        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, maxWidth: 580, margin: '0 auto 40px', textAlign: 'center', lineHeight: 1.8 }}>
+          Every protocol in Precision Training is grounded in published exercise science and sports nutrition research — not trends, not influencer advice.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, maxWidth: 900, margin: '0 auto' }}>
+          {[
+            {
+              stat: '1.6–2.2 g/kg',
+              label: 'Optimal protein intake',
+              desc: 'Meta-analysis of 49 studies (Morton et al., 2018, Br J Sports Med) confirms this range maximizes muscle protein synthesis.',
+              color: '#6db88a',
+            },
+            {
+              stat: '~2× / week',
+              label: 'Minimum effective frequency',
+              desc: 'Schoenfeld et al. (2016, J Strength Cond Res): training each muscle group twice per week produces significantly greater hypertrophy than once.',
+              color: '#c8a96e',
+            },
+            {
+              stat: '~40% muscle loss',
+              label: 'Risk on GLP-1 without resistance training',
+              desc: 'Wilding et al. & NEJM data: rapid weight loss on GLP-1 medications without resistance training can result in up to 40% of weight lost being lean mass.',
+              color: '#e06060',
+            },
+            {
+              stat: 'Progressive overload',
+              label: 'The #1 driver of strength gain',
+              desc: 'American College of Sports Medicine Position Stand: systematic progressive overload is the single most important variable for long-term muscle and strength development.',
+              color: '#6e9dc8',
+            },
+          ].map(item => (
+            <div key={item.label} style={{
+              padding: '24px 20px', borderRadius: 14,
+              background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: item.color, marginBottom: 6, fontFamily: 'Montserrat, sans-serif' }}>{item.stat}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 10 }}>{item.label}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', lineHeight: 1.7 }}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
+        <p style={{ textAlign: 'center', marginTop: 24, fontSize: 10, color: 'rgba(255,255,255,0.15)', letterSpacing: 0.5 }}>
+          For informational purposes only. Not medical advice. <Link to="/terms" style={{ color: 'rgba(200,169,110,0.4)', textDecoration: 'none' }}>Full disclaimer →</Link>
+        </p>
+      </section>
+
+      {/* ── GLP-1 MEDICAL DISCLAIMER ──────────────────── */}
+      <section className={styles.section} style={{ paddingTop: 0 }}>
+        <div style={{
+          maxWidth: 760, margin: '0 auto', padding: '20px 24px', borderRadius: 14,
+          background: 'rgba(220,80,80,0.04)', border: '1px solid rgba(220,80,80,0.15)',
+        }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>⚕️</span>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(220,80,80,0.7)', marginBottom: 8 }}>Important — GLP-1 Users</div>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.8, margin: 0 }}>
+                The GLP-1 Muscle Guard plans are general fitness frameworks — they are <strong style={{ color: 'rgba(255,255,255,0.5)' }}>not medical advice</strong> and do not replace guidance from your prescribing physician. Always consult your healthcare provider before starting a new exercise or nutrition program while on medication. <Link to="/terms" style={{ color: 'rgba(200,169,110,0.5)', textDecoration: 'none' }}>Read full disclaimer →</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── FREE vs PREMIUM ───────────────────────────── */}
       <section className={styles.section}>
         <p className={styles.eyebrow}>PRICING</p>
@@ -444,9 +513,17 @@ export default function Home() {
         </div>
         <div className={styles.footerLinks}>
           <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/terms">Terms & Disclaimer</Link>
           <Link to="/impressum">Impressum</Link>
         </div>
         <div className={styles.footerCopy}>© 2026 Precision Training. All rights reserved.</div>
+        <div style={{
+          marginTop: 20, padding: '14px 20px', borderRadius: 10,
+          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+          fontSize: 10, color: 'rgba(255,255,255,0.2)', lineHeight: 1.8, maxWidth: 640, margin: '20px auto 0', textAlign: 'center',
+        }}>
+          <strong style={{ color: 'rgba(255,255,255,0.3)' }}>Medical Disclaimer:</strong> Precision Training provides AI-generated fitness and nutrition plans for informational purposes only. This is not medical advice. Always consult a qualified healthcare professional before starting a new exercise or nutrition program, especially if you are taking GLP-1 medications or have pre-existing health conditions. See our <Link to="/terms" style={{ color: 'rgba(200,169,110,0.5)', textDecoration: 'none' }}>full disclaimer</Link>.
+        </div>
       </footer>
     </div>
   )
