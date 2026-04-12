@@ -111,8 +111,7 @@ export default function AICoach({ slug, isNutrition, isGlp1 }) {
           </p>
         </div>
         <div className={styles.limitBadge} style={{ color: remaining <= 2 ? '#e05555' : 'var(--gold)' }}>
-          {remaining}/{DAILY_LIMIT} questions today
-          {remaining}/{DAILY_LIMIT} left today
+          {remaining}/{DAILY_LIMIT} questions left today
         </div>
       </div>
 
