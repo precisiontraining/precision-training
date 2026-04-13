@@ -35,7 +35,7 @@ function buildPayload(form) {
     question_9dR1d4: form.goal,
     question_eB0ABo: form.activity,
     question_WAKoAQ: parseInt(form.trainingDays),
-    question_aBAxBy: form.diet,
+    question_aBAxBy: form.diet.length === 0 ? 'none' : form.diet.join(', '),
     question_6dWkd5: form.avoidFoods || null,
     question_7daDdz: parseInt(form.mealsPerDay),
     question_blYklE: form.struggleToEat,
@@ -56,7 +56,7 @@ export default function FormNutrition() {
     location: '',
     unit: 'imperial', weight: '', height: '',
     goal: '', activity: '', trainingDays: '',
-    diet: 'none', avoidFoods: '',
+    diet: [], avoidFoods: '',
     mealsPerDay: '', struggleToEat: '',
     consent: false,
   })
@@ -238,12 +238,25 @@ export default function FormNutrition() {
           <div className={styles.sub}>Final step — shapes your meal plan.</div>
           <div className={styles.fields}>
             <div>
-              <label className={styles.label}>Diet Type</label>
+              <label className={styles.label}>
+                Diet Type
+                <span style={{ fontSize: 9, fontWeight: 400, color: 'rgba(255,255,255,0.3)', textTransform: 'none', letterSpacing: 0, marginLeft: 6 }}>Select all that apply</span>
+              </label>
               <div className={styles.choiceGrid}>
-                {['none', 'vegetarian', 'vegan', 'lactose free', 'gluten free'].map(d => (
-                  <button key={d} className={`${styles.choice} ${form.diet === d ? styles.choiceActive : ''}`} onClick={() => set('diet', d)} style={{ textTransform: 'capitalize' }}>{d === 'none' ? 'No restriction' : d}</button>
-                ))}
+                {['vegetarian', 'vegan', 'lactose free', 'gluten free', 'halal', 'kosher'].map(d => {
+                  const active = form.diet.includes(d)
+                  return (
+                    <button key={d} className={`${styles.choice} ${active ? styles.choiceActive : ''}`}
+                      onClick={() => set('diet', active ? form.diet.filter(x => x !== d) : [...form.diet, d])}
+                      style={{ textTransform: 'capitalize' }}>
+                      {active ? '✓ ' : ''}{d}
+                    </button>
+                  )
+                })}
               </div>
+              {form.diet.length === 0 && (
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 6 }}>No restriction selected — all foods included</div>
+              )}
             </div>
             <div>
               <label className={styles.label}>Foods to Avoid <span style={{ opacity: 0.4, fontWeight: 400, textTransform: 'none', fontSize: 9 }}>(optional)</span></label>
