@@ -34,7 +34,7 @@ function buildPayload(form) {
     question_NAB5yG: form.name,
     question_qbEZe2: form.email,
     question_QAB2yg: parseInt(form.age),
-    question_1KdeNW: form.equipment + glpContext,
+    question_1KdeNW: (form.equipmentNotes ? `${form.equipment}. Additional notes: ${form.equipmentNotes}` : form.equipment) + glpContext,
     question_J2XxD4: 3,
     question_glp1: form.glp1,
     question_glp1_stage: form.glp1 === 'yes' ? form.glp1Stage : 'N/A',
@@ -78,7 +78,7 @@ export default function FormGLP1() {
     if (step === 4) {
       if (!form.glp1) e.glp1 = 'Required'
       if (form.glp1 === 'yes' && !form.glp1Stage) e.glp1Stage = 'Please select your current stage'
-      if (!form.equipment.trim()) e.equipment = 'Required'
+      if (!form.equipment) e.equipment = 'Please select your equipment'
     }
     if (step === 5) {
       if (!form.consent) e.consent = 'Please accept to continue'
@@ -228,8 +228,30 @@ export default function FormGLP1() {
             )}
             <div>
               <label className={styles.label}>Available Equipment</label>
-              <input className={`${styles.input} ${errors.equipment ? styles.inputError : ''}`} placeholder="e.g. full gym, dumbbells only, bodyweight" value={form.equipment} onChange={e => set('equipment', e.target.value)} />
+              <div className={`${styles.choiceGrid} ${styles.choiceGridWide}`}>
+                {[
+                  { value: 'bodyweight only — no equipment available', label: '🏠 Bodyweight Only', sub: 'No equipment needed' },
+                  { value: 'home gym with dumbbells and resistance bands', label: '🏠 Home + Dumbbells', sub: 'Dumbbells & bands' },
+                  { value: 'home gym with dumbbells, barbells, and a bench', label: '🏠 Home Gym', sub: 'Dumbbells, barbell, bench' },
+                  { value: 'full commercial gym with all machines, cables, and free weights', label: '🏋️ Full Gym', sub: 'All machines & cables' },
+                ].map(opt => (
+                  <button key={opt.value}
+                    className={`${styles.choice} ${form.equipment === opt.value ? styles.choiceGlp : ''}`}
+                    onClick={() => set('equipment', opt.value)}
+                    style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 3, padding: '13px 16px' }}>
+                    <span style={{ fontWeight: 700 }}>{opt.label}</span>
+                    <span style={{ fontSize: 10, opacity: 0.6, fontWeight: 400 }}>{opt.sub}</span>
+                  </button>
+                ))}
+              </div>
               {errors.equipment && <div className={styles.errorMsg}>{errors.equipment}</div>}
+              <div style={{ marginTop: 10 }}>
+                <label className={styles.label} style={{ marginBottom: 6, display: 'block' }}>
+                  Specific notes <span style={{ opacity: 0.4, fontWeight: 400, textTransform: 'none', fontSize: 9 }}>(optional)</span>
+                </label>
+                <input className={styles.input} placeholder="e.g. no leg press, have a pull-up bar"
+                  value={form.equipmentNotes || ''} onChange={e => set('equipmentNotes', e.target.value)} />
+              </div>
             </div>
             <div className={styles.glpInfo}>
               <div className={styles.glpInfoTitle}>Auto-applied to your plan</div>

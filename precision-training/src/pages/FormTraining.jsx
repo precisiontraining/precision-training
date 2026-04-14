@@ -31,7 +31,7 @@ function buildPayload(form) {
     question_NAB5yG: form.name,
     question_qbEZe2: form.email,
     question_QAB2yg: parseInt(form.age),
-    question_1KdeNW: form.equipment,
+    question_1KdeNW: form.equipmentNotes ? `${form.equipment}. Additional notes: ${form.equipmentNotes}` : form.equipment,
     question_J2XxD4: parseInt(form.trainingDays),
     question_oAkg6e_consent: true,
     pt_token: WEBHOOK_SECRET,
@@ -70,7 +70,7 @@ export default function FormTraining() {
       if (!form.height || isNaN(form.height)) e.height = 'Required'
     }
     if (step === 4) {
-      if (!form.equipment.trim()) e.equipment = 'Required (e.g. full gym, dumbbells only)'
+      if (!form.equipment) e.equipment = 'Please select your equipment'
       if (!form.trainingDays || +form.trainingDays < 1 || +form.trainingDays > 7) e.trainingDays = 'Enter 1–7 days'
       if (!form.consent) e.consent = 'Please accept to continue'
     }
@@ -193,8 +193,30 @@ export default function FormTraining() {
           <div className={styles.fields}>
             <div>
               <label className={styles.label}>Available Equipment</label>
-              <input className={`${styles.input} ${errors.equipment ? styles.inputError : ''}`} placeholder="e.g. full gym, dumbbells only, bodyweight" value={form.equipment} onChange={e => set('equipment', e.target.value)} />
+              <div className={`${styles.choiceGrid} ${styles.choiceGridWide}`}>
+                {[
+                  { value: 'bodyweight only — no equipment available', label: '🏠 Bodyweight Only', sub: 'No equipment needed' },
+                  { value: 'home gym with dumbbells and resistance bands', label: '🏠 Home + Dumbbells', sub: 'Dumbbells & bands' },
+                  { value: 'home gym with dumbbells, barbells, and a bench', label: '🏠 Home Gym', sub: 'Dumbbells, barbell, bench' },
+                  { value: 'full commercial gym with all machines, cables, and free weights', label: '🏋️ Full Gym', sub: 'All machines & cables' },
+                ].map(opt => (
+                  <button key={opt.value}
+                    className={`${styles.choice} ${form.equipment === opt.value ? styles.choiceActive : ''}`}
+                    onClick={() => set('equipment', opt.value)}
+                    style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 3, padding: '13px 16px' }}>
+                    <span style={{ fontWeight: 700 }}>{opt.label}</span>
+                    <span style={{ fontSize: 10, opacity: 0.6, fontWeight: 400 }}>{opt.sub}</span>
+                  </button>
+                ))}
+              </div>
               {errors.equipment && <div className={styles.errorMsg}>{errors.equipment}</div>}
+              <div style={{ marginTop: 10 }}>
+                <label className={styles.label} style={{ marginBottom: 6, display: 'block' }}>
+                  Specific equipment notes <span style={{ opacity: 0.4, fontWeight: 400, textTransform: 'none', fontSize: 9 }}>(optional)</span>
+                </label>
+                <input className={styles.input} placeholder="e.g. no leg press, have a pull-up bar"
+                  value={form.equipmentNotes || ''} onChange={e => set('equipmentNotes', e.target.value)} />
+              </div>
             </div>
             <div>
               <label className={styles.label}>Training Days per Week</label>
