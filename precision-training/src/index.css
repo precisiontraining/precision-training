@@ -223,3 +223,15 @@ input, textarea {
 
 .dots-loader span:nth-child(2) { animation-delay: 0.2s; }
 .dots-loader span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Mobile: hide scroll dots on small screens ── */
+@media (max-width: 640px) {
+  .scroll-dots { display: none !important; }
+}
+
+/* ── Prevent iOS zoom on input focus ── */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

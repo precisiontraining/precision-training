@@ -67,7 +67,13 @@
 }
 
 @media (max-width: 640px) {
-  .nav { padding: 14px 16px; }
-  .logo { font-size: 16px; }
-  .btnOutline { font-size: 11px; padding: 7px 12px; }
+  .nav { padding: 12px 16px; }
+  .logo { font-size: 15px; }
+  .btnOutline { font-size: 10px; padding: 7px 11px; letter-spacing: 0.5px; }
+  .btnPrimary { font-size: 10px; padding: 7px 11px; letter-spacing: 0.5px; }
+  .actions { gap: 8px; }
+}
+
+@media (max-width: 380px) {
+  .btnOutline, .btnPrimary { padding: 6px 9px; font-size: 9px; }
 }

@@ -801,18 +801,80 @@
   .whatYouGet  { grid-template-columns: 1fr; }
   .stepsWrap   { grid-template-columns: 1fr; gap: 48px; }
   .methodGrid  { grid-template-columns: 1fr 1fr; }
-  .statsBar    { flex-direction: column; }
-  .statDivider { width: 80%; height: 1px; }
+  .statsBar    { flex-direction: row; flex-wrap: wrap; }
+  .statItem    { flex: 1 1 calc(50% - 20px); padding: 24px 16px; }
+  .statDivider { display: none; }
 }
 
 @media (max-width: 640px) {
-  .section      { padding: 64px 20px; }
-  .sectionInner { padding: 0 20px; }
-  .methodSection{ padding: 64px 20px; }
-  .heroLogo     { width: 160px; }
-  .heroContent  { padding: 100px 20px 80px; }
-  .ctaSection   { padding: 60px 20px; }
-  .ctaInner     { padding: 40px 24px; }
-  .methodGrid   { grid-template-columns: 1fr; }
-  .footer       { flex-direction: column; align-items: center; text-align: center; }
+  /* Layout */
+  .section      { padding: 52px 18px; }
+  .sectionInner { padding: 0 18px; }
+  .methodSection{ padding: 52px 18px; }
+  .ctaSection   { padding: 52px 18px; }
+  .ctaInner     { padding: 32px 20px; border-radius: 16px; }
+  .footer       { flex-direction: column; align-items: center; text-align: center; padding: 28px 20px; }
+  .footerLinks  { flex-wrap: wrap; justify-content: center; gap: 14px; }
+
+  /* Stats bar */
+  .statsBar     { flex-direction: column; }
+  .statItem     { width: 100%; padding: 20px 16px; }
+  .statDivider  { width: 80%; height: 1px; display: block; }
+  .statNum      { font-size: 28px; }
+
+  /* Section titles */
+  .sectionTitle { font-size: clamp(22px, 7vw, 32px); }
+  .sectionSub   { font-size: 14px; margin-bottom: 40px; }
+
+  /* Problem cards */
+  .cards        { grid-template-columns: 1fr; gap: 12px; }
+  .card         { padding: 24px 20px; }
+
+  /* Plan cards */
+  .whatYouGet   { grid-template-columns: 1fr; gap: 16px; margin-top: 36px; }
+  .planCard     { padding: 20px 18px; gap: 16px; }
+  .planCard h3  { font-size: 17px; }
+  .planPreview  { height: 160px; }
+  .featureList li { font-size: 13px; }
+
+  /* Steps */
+  .stepsWrap    { grid-template-columns: 1fr; gap: 32px; }
+  .steps        { gap: 0; }
+  .step h3      { font-size: 15px; }
+  .step p       { font-size: 13px; }
+  .formLinks    { gap: 10px; }
+  .formLink     { padding: 16px 18px; }
+
+  /* Method */
+  .methodGrid   { grid-template-columns: 1fr; gap: 12px; }
+  .methodCard   { padding: 22px 18px; }
+
+  /* CTA buttons */
+  .heroBtns     { flex-direction: column; align-items: stretch; gap: 10px; }
+  .btnPrimary   { text-align: center; padding: 16px 20px; font-size: 13px; }
+  .btnSecondary { text-align: center; padding: 16px 20px; font-size: 13px; }
+
+  /* CTA section */
+  .ctaTitle     { font-size: clamp(22px, 6vw, 30px); }
+  .ctaSub       { font-size: 14px; }
+
+  /* Pricing grid (Free vs Premium) */
+  .pricingGrid  { grid-template-columns: 1fr !important; }
+
+  /* FAQ */
+  .faqItem      { padding: 18px 16px; }
+  .faqQ         { font-size: 14px; }
+  .faqA         { font-size: 13px; }
+}
+
+@media (max-width: 400px) {
+  .section      { padding: 44px 14px; }
+  .planCard     { padding: 16px 14px; }
+  .btnPrimary, .btnSecondary { font-size: 12px; padding: 14px 16px; }
+}
+
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }

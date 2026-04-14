@@ -215,11 +215,11 @@ export default function HeroScroll({ trainingPath, nutritionPath, glp1Path, glp1
 
   return (
     <>
-      {/* dots */}
+      {/* dots — hidden on small screens */}
       <div style={{
-        position:'fixed', right:20, top:'50%', transform:'translateY(-50%)',
+        position:'fixed', right:14, top:'50%', transform:'translateY(-50%)',
         zIndex:200, display:'flex', flexDirection:'column', gap:10,
-      }}>
+      }} className="scroll-dots">
         {[0,1,2,3,4].map(i => (
           <div key={i} ref={el => dotsRef.current[i]=el} style={{
             width:4, height:4, borderRadius:'50%',
@@ -307,42 +307,46 @@ export default function HeroScroll({ trainingPath, nutritionPath, glp1Path, glp1
 
           {/* CTAs */}
           <div ref={ctaRef} style={{
-            position:'absolute', zIndex:20, bottom:'6vh',
-            display:'flex', gap:10, flexWrap:'wrap', justifyContent:'center',
-            padding:'0 24px', opacity:0, willChange:'opacity, transform',
+            position:'absolute', zIndex:20, bottom:'4vh',
+            display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center',
+            padding:'0 16px', opacity:0, willChange:'opacity, transform',
+            width:'100%', boxSizing:'border-box',
           }}>
             <Link to={glp1Path} style={{
-              display:'inline-flex', alignItems:'center', gap:6, padding:'13px 26px',
+              display:'inline-flex', alignItems:'center', gap:6,
+              padding:'12px clamp(14px, 4vw, 26px)',
               borderRadius:50, fontFamily:'Montserrat, sans-serif',
-              fontSize:12, fontWeight:700, letterSpacing:'1.5px',
+              fontSize:'clamp(10px,2.5vw,12px)', fontWeight:700, letterSpacing:'1.5px',
               textTransform:'uppercase', textDecoration:'none', cursor:'pointer',
               background:'linear-gradient(135deg, #4a9e68, #6db88a)',
               color:'#fff', boxShadow:'0 8px 28px rgba(100,180,130,0.35)',
-              transition:'transform 0.2s ease, box-shadow 0.2s ease',
+              transition:'transform 0.2s ease, box-shadow 0.2s ease', whiteSpace:'nowrap',
             }}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 12px 36px rgba(100,180,130,0.5)' }}
               onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='0 8px 28px rgba(100,180,130,0.35)' }}
             >💊 GLP-1 Training Plan →</Link>
             <Link to={glp1NutritionPath} style={{
-              display:'inline-flex', alignItems:'center', gap:6, padding:'13px 24px',
+              display:'inline-flex', alignItems:'center', gap:6,
+              padding:'12px clamp(14px, 4vw, 24px)',
               borderRadius:50, fontFamily:'Montserrat, sans-serif',
-              fontSize:12, fontWeight:700, letterSpacing:'1.5px',
+              fontSize:'clamp(10px,2.5vw,12px)', fontWeight:700, letterSpacing:'1.5px',
               textTransform:'uppercase', textDecoration:'none', cursor:'pointer',
               background:'rgba(109,184,138,0.08)', color:'#6db88a',
               border:'1px solid rgba(109,184,138,0.3)',
-              transition:'transform 0.2s ease, background 0.2s ease',
+              transition:'transform 0.2s ease, background 0.2s ease', whiteSpace:'nowrap',
             }}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.background='rgba(109,184,138,0.15)' }}
               onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.background='rgba(109,184,138,0.08)' }}
             >💊 GLP-1 Nutrition Plan →</Link>
             <Link to={trainingPath} style={{
-              display:'inline-flex', alignItems:'center', padding:'11px 20px',
+              display:'inline-flex', alignItems:'center',
+              padding:'10px clamp(12px, 3vw, 20px)',
               borderRadius:50, fontFamily:'Montserrat, sans-serif',
-              fontSize:10, fontWeight:600, letterSpacing:'1.5px',
+              fontSize:'clamp(9px,2vw,10px)', fontWeight:600, letterSpacing:'1.5px',
               textTransform:'uppercase', textDecoration:'none', cursor:'pointer',
               background:'transparent', color:'rgba(255,255,255,0.2)',
               border:'1px solid rgba(255,255,255,0.08)',
-              transition:'all 0.2s ease',
+              transition:'all 0.2s ease', whiteSpace:'nowrap',
             }}
               onMouseEnter={e => { e.currentTarget.style.color='rgba(200,169,110,0.7)'; e.currentTarget.style.borderColor='rgba(200,169,110,0.25)' }}
               onMouseLeave={e => { e.currentTarget.style.color='rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.08)' }}

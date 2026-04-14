@@ -347,7 +347,7 @@ export default function Home() {
         <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, maxWidth: 580, margin: '0 auto 40px', textAlign: 'center', lineHeight: 1.8 }}>
           Every protocol in Precision Training is grounded in published exercise science and sports nutrition research — not trends, not influencer advice.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, maxWidth: 900, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 16, maxWidth: 900, margin: '0 auto' }}>
           {[
             {
               stat: '1.6–2.2 g/kg',
@@ -378,7 +378,7 @@ export default function Home() {
               padding: '24px 20px', borderRadius: 14,
               background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)',
             }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: item.color, marginBottom: 6, fontFamily: 'Montserrat, sans-serif' }}>{item.stat}</div>
+              <div style={{ fontSize: 'clamp(16px,4vw,22px)', fontWeight: 800, color: item.color, marginBottom: 6, fontFamily: 'Montserrat, sans-serif' }}>{item.stat}</div>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 10 }}>{item.label}</div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', lineHeight: 1.7 }}>{item.desc}</div>
             </div>
@@ -411,7 +411,7 @@ export default function Home() {
       <section className={styles.section}>
         <p className={styles.eyebrow}>PRICING</p>
         <h2 className={styles.sectionTitle}>100% free to start. <span style={{ color: '#6db88a' }}>Premium coming soon.</span></h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, maxWidth: 760, margin: '0 auto' }}>
+        <div className={styles.pricingGrid} style={{ gap: 20, maxWidth: 760, margin: '0 auto' }}>
           {/* Free */}
           <div style={{ padding: '28px 24px', borderRadius: 16, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Free</div>

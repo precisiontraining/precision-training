@@ -372,6 +372,14 @@
 }
 
 @media (max-width: 520px) {
-  .page { padding: 80px 16px 40px; }
-  .choiceGrid { grid-template-columns: 1fr; }
+  .page         { padding: 72px 14px 40px; }
+  .card         { max-width: 100%; }
+  .choiceGrid   { grid-template-columns: 1fr; }
+  .title        { font-size: clamp(18px, 6vw, 26px); }
+  .input        { font-size: 16px; } /* prevent iOS zoom on focus */
+  .actions      { gap: 8px; }
+  .btnNext      { font-size: 11px; padding: 14px 18px; }
+  .unitRow      { flex-direction: column; gap: 8px; }
+  .unitToggle   { align-self: flex-start; }
+  .back         { font-size: 10px; }
 }
