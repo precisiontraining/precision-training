@@ -4,246 +4,289 @@
 /* ── LOCK PAGE ─────────────────────────────────────────────────── */
 .lockPage {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  padding: 20px;
+  padding: 16px;
   background: radial-gradient(ellipse at 50% 40%, rgba(200,169,110,0.06) 0%, transparent 60%);
 }
-
 .lockCard {
   background: #0e0e0e; border: 1px solid #1e1e1e; border-radius: 20px;
-  padding: 48px 40px; width: 100%; max-width: 420px; text-align: center;
+  padding: 40px 32px; width: 100%; max-width: 400px; text-align: center;
 }
-
-.lockLogo { width: 80px; height: auto; margin: 0 auto 28px; display: block; opacity: 0.9; }
-
-.lockCard h1 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
-.lockCard p { color: #666; font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
-
+.lockLogo { width: 72px; height: auto; margin: 0 auto 24px; display: block; opacity: 0.9; }
+.lockCard h1 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+.lockCard p { color: #666; font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
 .lockInput {
   width: 100%; background: #080808; border: 1px solid #222; color: var(--white);
   padding: 14px 16px; border-radius: 10px; font-size: 16px; font-family: var(--font);
   text-align: center; letter-spacing: 0.12em; margin-bottom: 12px; transition: border-color .2s;
+  -webkit-appearance: none;
 }
 .lockInput:focus { border-color: var(--gold); outline: none; }
-
 .lockError { color: #f87171; font-size: 13px; margin-bottom: 12px; }
-
 .lockBtn {
   width: 100%; padding: 15px; background: var(--gold); color: #000;
   border-radius: 10px; font-weight: 800; font-size: 15px; font-family: var(--font);
   cursor: pointer; transition: all .2s; margin-bottom: 16px; border: none;
+  -webkit-appearance: none; touch-action: manipulation;
 }
 .lockBtn:hover { background: var(--gold-light); }
 .lockBtn:disabled { opacity: .5; cursor: not-allowed; }
-
 .lockBack { font-size: 13px; color: #444; text-decoration: none; transition: color .2s; }
 .lockBack:hover { color: var(--gold); }
 
 /* ── HEADER ────────────────────────────────────────────────────── */
 .header {
-  padding: 20px 40px; border-bottom: 1px solid #141414;
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 16px 20px; border-bottom: 1px solid #141414;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
 }
-
-.logo { font-size: 15px; font-weight: 800; text-decoration: none; }
+.logo { font-size: 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
 .gold { color: var(--gold); }
-
 .planTitle {
-  font-size: clamp(15px, 2vw, 20px); font-weight: 800; color: #aaa;
-  letter-spacing: -0.01em;
+  font-size: clamp(13px, 2vw, 18px); font-weight: 800; color: #aaa;
+  letter-spacing: -0.01em; text-align: center;
 }
+.glp1Badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  background: rgba(109,184,138,0.12); border: 1px solid rgba(109,184,138,0.35);
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #6db88a; white-space: nowrap; flex-shrink: 0;
+}
+
+/* Settings button */
+.settingsBtn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: #111; border: 1px solid #1e1e1e;
+  color: #666; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .2s; flex-shrink: 0;
+  touch-action: manipulation;
+}
+.settingsBtn:hover { color: var(--gold); border-color: rgba(200,169,110,0.3); background: rgba(200,169,110,0.06); }
 
 /* ── TABS ──────────────────────────────────────────────────────── */
 .tabs {
-  display: flex; border-bottom: 1px solid #141414; padding: 0 40px; background: #060606;
+  display: flex; border-bottom: 1px solid #141414; padding: 0;
+  background: #060606; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
-  padding: 16px 24px; background: none; color: #555; font-size: 13px; font-weight: 700;
+  padding: 14px 16px; background: none; color: #555; font-size: 12px; font-weight: 700;
   font-family: var(--font); cursor: pointer; border: none; border-bottom: 2px solid transparent;
   transition: all .2s; margin-bottom: -1px; letter-spacing: 0.02em; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0; touch-action: manipulation;
 }
 .tab:hover { color: #aaa; }
-.tabActive { color: var(--white); border-bottom-color: var(--gold); }
+.tabActive { color: var(--white) !important; border-bottom-color: var(--gold); }
 
 /* ── CONTENT ───────────────────────────────────────────────────── */
-.content { max-width: 960px; margin: 0 auto; padding: 40px; }
+.content { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
 
-/* ── TRAINING VIEW ─────────────────────────────────────────────── */
-.trainingView { display: flex; flex-direction: column; gap: 28px; }
+/* ── TRAINING / NUTRITION VIEW ─────────────────────────────────── */
+.trainingView { display: flex; flex-direction: column; gap: 20px; }
 
 /* Day selector pill tabs */
 .dayTabs {
   display: flex; gap: 8px; flex-wrap: wrap;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding-bottom: 4px;
 }
-
+.dayTabs::-webkit-scrollbar { display: none; }
 .dayTab {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
-  padding: 12px 20px; background: #0e0e0e; border: 1px solid #1a1a1a;
+  padding: 10px 16px; background: #0e0e0e; border: 1px solid #1a1a1a;
   border-radius: 12px; cursor: pointer; transition: all .2s;
-  font-family: var(--font); min-width: 90px;
+  font-family: var(--font); min-width: 76px; flex-shrink: 0;
+  touch-action: manipulation;
 }
 .dayTab:hover { border-color: #2a2a2a; }
-.dayTabActive {
-  background: rgba(200,169,110,0.08); border-color: rgba(200,169,110,0.4);
-}
-
-.dayTabLabel {
-  font-size: 13px; font-weight: 800; color: #aaa; transition: color .2s;
-}
+.dayTabActive { background: rgba(200,169,110,0.08); border-color: rgba(200,169,110,0.4); }
+.dayTabLabel { font-size: 12px; font-weight: 800; color: #aaa; transition: color .2s; }
 .dayTabActive .dayTabLabel { color: var(--gold); }
-
 .dayTabSub {
-  font-size: 10px; color: #444; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 80px;
+  font-size: 9px; color: #444; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 72px;
 }
 
 /* Day content area */
 .dayContent {
-  background: #0a0a0a; border: 1px solid #161616; border-radius: 20px; overflow: hidden;
+  background: #0a0a0a; border: 1px solid #161616; border-radius: 16px; overflow: hidden;
 }
-
 .dayHeader {
-  padding: 24px 28px; border-bottom: 1px solid #141414;
-  display: flex; align-items: center; justify-content: space-between;
-  background: linear-gradient(135deg, rgba(200,169,110,0.05) 0%, transparent 100%);
+  padding: 18px 20px; border-bottom: 1px solid #141414;
+  display: flex; align-items: center; justify-content: space-between; gap: 12;
+  background: linear-gradient(135deg, rgba(200,169,110,0.04) 0%, transparent 100%);
 }
-
-.dayTitle {
-  font-size: clamp(18px, 2.5vw, 24px); font-weight: 900; color: #fff;
-  letter-spacing: -0.02em;
-}
-
+.dayTitle { font-size: clamp(16px, 2.5vw, 22px); font-weight: 900; color: #fff; letter-spacing: -0.02em; }
 .dayCount {
-  font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase;
-  letter-spacing: 0.1em; background: rgba(200,169,110,0.1); padding: 4px 12px;
-  border-radius: 20px; border: 1px solid rgba(200,169,110,0.2);
+  font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase;
+  letter-spacing: 0.1em; background: rgba(200,169,110,0.1); padding: 4px 10px;
+  border-radius: 20px; border: 1px solid rgba(200,169,110,0.2); white-space: nowrap; flex-shrink: 0;
 }
 
-/* ── EXERCISE CARDS ────────────────────────────────────────────── */
+/* ── EXERCISE CARDS (default) ──────────────────────────────────── */
 .exerciseList { display: flex; flex-direction: column; }
 
 .exerciseCard {
-  display: flex; align-items: center; gap: 20px; padding: 20px 28px;
-  border-bottom: 1px solid #111; transition: background .15s;
-  position: relative;
+  display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+  border-bottom: 1px solid #111; transition: background .15s; position: relative;
 }
 .exerciseCard:last-child { border-bottom: none; }
-.exerciseCard:hover { background: rgba(255,255,255,0.02); }
+.exerciseCard:hover { background: rgba(255,255,255,0.015); }
 
 .exerciseNum {
   font-size: 11px; font-weight: 900; color: #2a2a2a; letter-spacing: 0.05em;
-  min-width: 28px; font-variant-numeric: tabular-nums;
+  min-width: 24px; font-variant-numeric: tabular-nums; flex-shrink: 0;
 }
-
 .exerciseImg {
-  width: 80px; height: 80px; flex-shrink: 0; border-radius: 10px;
+  width: 72px; height: 72px; flex-shrink: 0; border-radius: 10px;
   background: #ffffff; border: 1px solid #2a2a2a; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
 }
-
-.exImg {
-  width: 100%; height: 100%; object-fit: contain; padding: 5px;
-}
-
+.exImg { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 .exImgPlaceholder {
   width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
   background: #111; color: #2a2a2a;
 }
-
-.exerciseInfo { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-
-.exerciseName {
-  font-size: 15px; font-weight: 700; color: #e0e0e0; line-height: 1.3;
-}
-
-.exerciseNotes {
-  font-size: 12px; color: #555; font-style: italic;
-}
-
-.exerciseMeta { display: flex; gap: 8px; flex-wrap: wrap; }
-
+.exerciseInfo { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.exerciseName { font-size: 14px; font-weight: 700; color: #e0e0e0; line-height: 1.3; }
+.exerciseNotes { font-size: 11px; color: #555; font-style: italic; }
+.exerciseMeta { display: flex; gap: 6px; flex-wrap: wrap; }
 .metaTag {
-  display: flex; align-items: center; gap: 6px; background: #111; border: 1px solid #1e1e1e;
-  border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #999;
-  font-weight: 600;
+  display: flex; align-items: center; gap: 5px; background: #111; border: 1px solid #1e1e1e;
+  border-radius: 6px; padding: 3px 8px; font-size: 11px; color: #999; font-weight: 600;
 }
-
-.metaKey {
-  font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: #444;
-  font-weight: 800;
-}
+.metaKey { font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; color: #444; font-weight: 800; }
 
 .exerciseActions {
-  display: flex; flex-direction: column; gap: 6px; opacity: 0; transition: opacity .2s;
+  display: flex; flex-direction: column; gap: 5px; opacity: 0; transition: opacity .2s; flex-shrink: 0;
 }
 .exerciseCard:hover .exerciseActions { opacity: 1; }
+
+/* ── COMPACT layout ────────────────────────────────────────────── */
+.exerciseCardCompact {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #0f0f0f;
+  transition: background .15s;
+}
+.exerciseCardCompact:last-child { border-bottom: none; }
+.exerciseCardCompact:hover { background: rgba(255,255,255,0.015); }
+
+/* Nutrition compact same structure but 3-col */
+.nutritionCardCompact {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  border-bottom: 1px solid #0f0f0f;
+  transition: background .15s;
+}
+.nutritionCardCompact:last-child { border-bottom: none; }
+
+.compactNum { font-size: 10px; font-weight: 900; color: #2a2a2a; font-variant-numeric: tabular-nums; }
+.compactName { font-size: 13px; font-weight: 700; color: #d0d0d0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compactMeta { font-size: 11px; color: #555; white-space: nowrap; }
+.compactActions { display: flex; gap: 4px; }
+
+/* ── GRID layout ───────────────────────────────────────────────── */
+.exerciseGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: #111;
+}
+.exerciseCardGrid {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px; background: #0a0a0a;
+  transition: background .15s;
+}
+.exerciseCardGrid:hover { background: #0d0d0d; }
+.exerciseImgGrid {
+  width: 100%; aspect-ratio: 4/3; border-radius: 8px;
+  background: #fff; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.exerciseNameGrid { font-size: 12px; font-weight: 800; color: #d8d8d8; line-height: 1.3; }
+.exerciseNotesGrid { font-size: 10px; color: #555; font-style: italic; }
+.exerciseMetaGrid { display: flex; gap: 4px; flex-wrap: wrap; }
+.gridActions { display: flex; gap: 5px; }
+
+/* Nutrition grid */
+.nutritionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: #111;
+}
+.nutritionCardGrid {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 14px 16px; background: #0a0a0a;
+  transition: background .15s;
+}
+.nutritionCardGrid:hover { background: #0d0d0d; }
+.nutritionGridName { font-size: 12px; font-weight: 700; color: #d0d0d0; line-height: 1.3; }
+.nutritionGridAmount { font-size: 11px; color: #666; }
+.nutritionGridMacros { display: flex; gap: 10px; font-size: 11px; color: #888; }
+.nutritionGridMacros strong { color: #ccc; }
+
+/* Add exercise button */
+.addExBtn {
+  margin: 14px 20px; padding: 13px; width: calc(100% - 40px);
+  background: transparent; border: 1px dashed #1e1e1e; border-radius: 10px;
+  color: #444; font-size: 13px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; transition: all .2s; display: flex; align-items: center;
+  justify-content: center; gap: 8px; touch-action: manipulation;
+}
+.addExBtn:hover { border-color: rgba(200,169,110,0.3); color: var(--gold); }
 
 .actionBtn {
   width: 30px; height: 30px; background: #111; border: 1px solid #1e1e1e;
   border-radius: 8px; display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: var(--gold); transition: all .15s; font-family: var(--font);
+  flex-shrink: 0; touch-action: manipulation;
 }
 .actionBtn:hover { background: #1a1a1a; border-color: #2a2a2a; }
 
-/* Add exercise button */
-.addExBtn {
-  margin: 16px 28px; padding: 14px; width: calc(100% - 56px);
-  background: transparent; border: 1px dashed #1e1e1e; border-radius: 10px;
-  color: #444; font-size: 13px; font-weight: 700; font-family: var(--font);
-  cursor: pointer; transition: all .2s; display: flex; align-items: center;
-  justify-content: center; gap: 8px;
-}
-.addExBtn:hover { border-color: rgba(200,169,110,0.3); color: var(--gold); }
-
 /* ── NUTRITION VIEW ────────────────────────────────────────────── */
-
-/* Coaching intro banner */
 .coachingIntro {
-  display: flex; gap: 14px; align-items: flex-start;
-  margin-bottom: 20px; padding: 16px 20px;
-  background: #111; border-left: 3px solid var(--gold);
-  border-radius: 0 10px 10px 0;
+  display: flex; gap: 12px; align-items: flex-start;
+  margin-bottom: 16px; padding: 14px 16px;
+  background: #111; border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0;
 }
 .coachingIntroIcon {
-  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
   background: rgba(200,169,110,0.12); display: flex; align-items: center;
   justify-content: center; color: var(--gold); margin-top: 1px;
 }
-.coachingIntroText {
-  font-size: 13px; line-height: 1.6; color: #aaa; margin: 0;
-}
+.coachingIntroText { font-size: 13px; line-height: 1.6; color: #aaa; margin: 0; }
 
-/* Meal purpose note */
 .mealPurpose {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 10px 28px 14px;
-  font-size: 12px; font-style: italic; color: #666; line-height: 1.5;
-  border-bottom: 1px solid #111;
+  display: flex; align-items: flex-start; gap: 8px; padding: 10px 20px 12px;
+  font-size: 12px; font-style: italic; color: #666; line-height: 1.5; border-bottom: 1px solid #111;
 }
-.mealPurpose svg { color: var(--gold); margin-top: 2px; }
 
 .nutritionList { display: flex; flex-direction: column; }
-
 .nutritionCard {
-  display: flex; align-items: center; gap: 20px; padding: 18px 28px;
+  display: flex; align-items: center; gap: 16px; padding: 14px 20px;
   border-bottom: 1px solid #0f0f0f; transition: background .15s;
 }
 .nutritionCard:last-child { border-bottom: none; }
 .nutritionCard:hover { background: rgba(255,255,255,0.015); }
+.nutritionNum { font-size: 10px; font-weight: 900; color: #2a2a2a; min-width: 24px; flex-shrink: 0; }
+.nutritionInfo { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 
-.nutritionNum {
-  font-size: 11px; font-weight: 900; color: #2a2a2a; min-width: 28px;
-}
-
-.nutritionInfo { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-
-/* ── MEAL TOTAL BAR — clearly distinct from food items ── */
+/* Meal total bar */
 .mealTotalBar {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
-  margin: 0; padding: 14px 28px;
+  gap: 12px; flex-wrap: wrap;
+  padding: 12px 20px;
   background: linear-gradient(90deg, rgba(200,169,110,0.1), rgba(200,169,110,0.04));
   border-top: 1px solid rgba(200,169,110,0.25);
 }
@@ -252,128 +295,108 @@
   font-size: 10px; font-weight: 900; text-transform: uppercase;
   letter-spacing: 0.12em; color: var(--gold);
 }
-.mealTotalMacros { display: flex; gap: 20px; flex-wrap: wrap; }
-.mealTotalMacro {
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-}
-.mealTotalVal { font-size: 15px; font-weight: 800; color: #e0e0e0; }
-.mealTotalKey { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+.mealTotalMacros { display: flex; gap: 16px; flex-wrap: wrap; }
+.mealTotalMacro { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.mealTotalVal { font-size: 14px; font-weight: 800; color: #e0e0e0; }
+.mealTotalKey { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
 
-/* ── SWAP OPTIONS ── */
-.swapOptions {
-  margin: 0; padding: 14px 28px 18px;
-  border-top: 1px solid #111;
-  border-radius: 0 0 16px 16px;
+/* Meal options */
+.optionRow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 20px; border-bottom: 1px solid #111;
 }
-.swapOptionsHeader {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 10px; font-weight: 900; text-transform: uppercase;
-  letter-spacing: 0.1em; color: #555; margin-bottom: 10px;
+.optionLabel {
+  font-size: 10px; font-weight: 700; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
 }
-.swapOptionsHeader svg { color: var(--gold); }
-.swapList {
-  list-style: none; padding: 0; margin: 0;
-  display: flex; flex-direction: column; gap: 6px;
+.optionBtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.optionBtn {
+  padding: 6px 14px; border: 1px solid var(--border);
+  border-radius: 20px; font-size: 12px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
+  touch-action: manipulation; min-height: 34px;
 }
-.swapList li {
-  font-size: 12px; color: #888; padding-left: 14px; position: relative; line-height: 1.4;
-}
-.swapList li::before {
-  content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 10px;
-}
+.optionBtn:hover { border-color: var(--gold); color: var(--gold); }
 
-/* legacy — keep for backward compat */
+/* ── EMPTY ─────────────────────────────────────────────────────── */
+.empty { text-align: center; padding: 60px 20px; color: #444; font-size: 14px; }
+
+/* ── LEGACY (keep for compatibility) ───────────────────────────── */
 .mealTotals { display: none; }
 .totalsLabel { display: none; }
 .totalsMeta { display: none; }
 .totalTag { display: none; }
+.swapOptions { display: none; }
 
-/* ── EMPTY ─────────────────────────────────────────────────────── */
-.empty { text-align: center; padding: 80px 20px; color: #444; font-size: 14px; }
+/* ── GLP-1 Theme ────────────────────────────────────────────────── */
+.glp1Theme { --gold: #6db88a; --gold-light: #7fcca0; --gold-dark: #4a9e68; }
 
-/* ── RESPONSIVE ────────────────────────────────────────────────── */
+/* ── RESPONSIVE — 768px ────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .header { padding: 16px 20px; }
-  .planTitle { font-size: 16px; }
-  .tabs { padding: 0 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tab { padding: 14px 14px; font-size: 11px; white-space: nowrap; }
-  .content { padding: 16px 14px; }
+  .content { padding: 16px 12px; }
+  .header { padding: 12px 14px; gap: 8px; }
+  .planTitle { font-size: 13px; }
+  .settingsBtn { width: 34px; height: 34px; }
+
+  .tab { padding: 12px 12px; font-size: 11px; }
+
+  .dayTab { min-width: 66px; padding: 9px 12px; }
+  .dayTabLabel { font-size: 11px; }
+
   .dayContent { border-radius: 14px; }
-  .dayHeader { padding: 16px 18px; }
+  .dayHeader { padding: 14px 16px; }
   .dayTitle { font-size: 15px; }
-  .exerciseCard { padding: 14px 16px; gap: 12px; }
-  .exerciseImg { width: 52px; height: 52px; flex-shrink: 0; }
+
+  .exerciseCard { padding: 12px 14px; gap: 12px; }
+  .exerciseImg { width: 60px; height: 60px; }
   .exerciseName { font-size: 13px; }
-  .addExBtn { margin: 12px 16px; width: calc(100% - 32px); }
-  .nutritionCard { padding: 12px 16px; }
-  .mealTotalBar { padding: 12px 16px; gap: 10px; flex-wrap: wrap; }
-  .mealTotalMacros { gap: 12px; flex-wrap: wrap; }
+  /* Always show actions on mobile (no hover) */
+  .exerciseActions { opacity: 1 !important; }
+
+  .addExBtn { margin: 12px 14px; width: calc(100% - 28px); padding: 12px; }
+
+  .exerciseCardCompact { padding: 11px 14px; gap: 8px; }
+  .nutritionCardCompact { padding: 10px 14px; gap: 8px; }
+  .compactName { font-size: 12px; }
+
+  .nutritionCard { padding: 11px 14px; gap: 12px; }
+  .nutritionNum { min-width: 20px; }
+
+  .mealTotalBar { padding: 10px 14px; gap: 8px; }
+  .mealTotalMacros { gap: 12px; }
   .mealTotalVal { font-size: 13px; }
-  .mealPurpose { padding: 10px 16px 12px; }
-  .swapOptions { padding: 12px 16px 16px; }
+
+  .mealPurpose { padding: 9px 14px 10px; }
+  .optionRow { padding: 10px 14px; }
+
   .coachingIntro { padding: 12px 14px; }
-  .dayTab { min-width: 68px; padding: 10px 12px; font-size: 11px; }
-  .dayTabs { gap: 6px; padding: 0 14px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .exerciseActions { opacity: 1; }
-  .lockCard { padding: 32px 20px; }
-  .optionRow { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
 
+/* ── RESPONSIVE — 480px ────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .header { flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 16px; }
-  .exerciseCard { flex-wrap: wrap; }
-  .exerciseImg { width: 100%; height: 140px; border-radius: 10px; }
+  .header { grid-template-columns: auto 1fr auto; padding: 10px 12px; }
+  .planTitle { font-size: 12px; }
+  .glp1Badge { display: none; } /* hide on very small screens */
+
+  /* Cards: stack image on top */
+  .exerciseCard { flex-wrap: wrap; gap: 10px; padding: 12px; }
+  .exerciseImg { width: 100%; height: 140px; border-radius: 10px; flex-shrink: unset; }
   .exerciseInfo { width: 100%; }
-  .exerciseActions { position: static; opacity: 1; flex-direction: row; gap: 8px; width: 100%; justify-content: flex-end; }
+  .exerciseActions {
+    opacity: 1 !important;
+    flex-direction: row; gap: 8px; width: 100%; justify-content: flex-end; order: 3;
+  }
+
+  /* Grid: single column on very small screens */
+  .exerciseGrid { grid-template-columns: 1fr; }
+  .nutritionGrid { grid-template-columns: 1fr; }
+
   .mealTotalMacros { gap: 10px; }
-  .dayTab { min-width: 60px; padding: 8px 10px; }
-}
+  .dayTab { min-width: 58px; padding: 8px 10px; }
 
+  .lockCard { padding: 28px 16px; }
+  .lockCard h1 { font-size: 18px; }
 
-/* ── MEAL OPTIONS ── */
-.optionRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.optionLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gray);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-}
-
-.optionBtns {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.optionBtn {
-  padding: 7px 16px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.02em;
-}
-
-.optionBtn:hover {
-  border-color: var(--gold);
-  color: var(--gold);
-}
-
-/* ── GLP-1 Theme Override ─────────────────────────────────── */
-.glp1Theme {
-  --gold: #6db88a;
-  --gold-light: #7fcca0;
-  --gold-dark: #4a9e68;
+  .addExBtn { margin: 10px 12px; width: calc(100% - 24px); }
+  .dayHeader { padding: 12px; }
 }

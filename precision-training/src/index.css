@@ -98,19 +98,22 @@ input, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .modal {
   background: #111;
   border: 1px solid var(--gold);
   border-radius: 16px;
-  padding: 28px;
+  padding: 24px;
   width: 100%;
   max-width: 480px;
-  max-height: 90vh;
+  max-height: 88vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal h3 {
@@ -235,3 +238,27 @@ input, textarea {
     font-size: 16px !important;
   }
 }
+
+/* ── Global mobile improvements ── */
+@media (max-width: 768px) {
+  /* Modals: bottom-anchored on small screens */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal {
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+    padding: 20px 16px 32px;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+  .modal h3 { font-size: 17px; margin-bottom: 16px; }
+  .modal-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .modal-actions { gap: 8px; }
+  .btn-cancel, .btn-confirm { padding: 13px; font-size: 13px; min-height: 48px; }
+}
+
+/* ── Prevent overscroll bounce ── */
+html, body { overscroll-behavior: none; }
