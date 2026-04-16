@@ -1,0 +1,138 @@
+.inlineLock {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(200,169,110,0.08);
+  border: 1px solid rgba(200,169,110,0.2);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #c8a96e;
+  text-transform: uppercase;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* ── Banner ── */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(200,169,110,0.05);
+  border: 1px solid rgba(200,169,110,0.15);
+  margin-bottom: 16px;
+}
+
+.bannerLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.bannerIcon { font-size: 18px; flex-shrink: 0; }
+
+.bannerTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 3px;
+}
+
+.bannerSub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.28);
+  line-height: 1.5;
+}
+
+.bannerDismiss {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.2);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+.bannerDismiss:hover { color: rgba(255,255,255,0.5); }
+
+/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal {
+  background: #141414;
+  border: 1px solid rgba(200,169,110,0.2);
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  animation: slideUp 0.25s ease both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modalIcon { font-size: 36px; margin-bottom: 16px; }
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.modalFeature {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c8a96e;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.modalText {
+  font-size: 12px;
+  color: rgba(255,255,255,0.38);
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.modalComingSoon {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.15);
+  margin-bottom: 24px;
+}
+
+.modalDismiss {
+  width: 100%;
+  padding: 13px;
+  border-radius: 50px;
+  background: rgba(200,169,110,0.1);
+  border: 1px solid rgba(200,169,110,0.25);
+  color: #c8a96e;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modalDismiss:hover { background: rgba(200,169,110,0.18); }

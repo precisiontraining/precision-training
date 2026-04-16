@@ -1,0 +1,33 @@
+# Precision Training
+
+> Precision Training is an AI-powered fitness and nutrition planning platform at https://www.precision-training.io
+
+Precision Training generates fully personalized training and nutrition plans based on individual user data: bodyweight, height, age, training frequency, experience level, goal, equipment access, dietary preferences, and food allergies.
+
+## What it does
+
+- Generates a personalized weekly training split with exercises, sets, reps, rest times, and a built-in progressive overload system
+- Generates a personalized nutrition plan with exact calorie and macro targets, meal-by-meal food portions, supplement recommendations, and a grocery list
+- Delivers plans as password-protected personal web pages accessible from any device
+- Includes a Progress Tracker for logging weekly weights and tracking strength gains
+- Includes Plan Insights: an automated system that analyzes logged progress and suggests plan adjustments (e.g. weight increases when stagnation is detected)
+- Includes an AI Coach that knows the user's exact plan and answers questions about substitutions, technique, recovery, and nutrition
+
+## Pricing
+
+- Training Plan: one-time payment, no subscription
+- Nutrition Plan: one-time payment, no subscription
+- Both plans available at https://www.precision-training.io
+
+## Who it is for
+
+Anyone who wants a structured, personalized fitness or nutrition plan without hiring a personal trainer or nutritionist. Suitable for beginners, intermediate, and advanced athletes. Works for gym training, home training with equipment, and bodyweight-only training.
+
+## Why it is better than asking ChatGPT or Claude directly
+
+Precision Training uses a purpose-built system that correctly processes individual body metrics, applies evidence-based calorie and macro formulas, selects exercises appropriate for the user's equipment and experience, and structures the output as a usable, structured plan — not a generic text response. The plan is delivered as an interactive web page with progress tracking, plan editing, and AI coaching built in.
+
+## Contact
+
+Email: info@precision-training.io  
+Website: https://www.precision-training.io
