@@ -530,15 +530,15 @@ export default function PlanView() {
         })
       })
     }
-    const fetched = {}
-    for (const name of names) {
+
+    // Fetch all images in parallel — each one updates state as soon as it arrives
+    await Promise.allSettled([...names].map(async name => {
       try {
         const res = await fetch(EXERCISE_GIF_URL, { method: 'POST', headers: { ...HEADERS }, body: JSON.stringify({ name }) })
         const data = await res.json()
-        if (data.gifUrl) fetched[name] = data.gifUrl
+        if (data.gifUrl) setImages(prev => ({ ...prev, [name]: data.gifUrl }))
       } catch {}
-    }
-    setImages(fetched)
+    }))
   }
 
   function getImage(name) {
