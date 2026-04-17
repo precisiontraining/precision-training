@@ -410,6 +410,7 @@ export default function PlanView() {
   const [loading, setLoading] = useState(false)
   const [tab, setTab] = useState('plan')
   const [images, setImages] = useState({})
+  const imageLoadingRef = useRef(false)
   const [toast, setToast] = useState('')
   const [swapModal, setSwapModal] = useState(null)
   const [addModal, setAddModal] = useState(null)
@@ -439,10 +440,15 @@ export default function PlanView() {
   }, [slug]) // eslint-disable-line
 
   async function loadImages(parsed) {
+    if (imageLoadingRef.current) return   // prevent double-calls
     if (!parsed?.days) return
     const names = new Set()
     parsed.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
     if (!names.size) return
+
+    imageLoadingRef.current = true
+    setImages({})  // clear stale images before fresh load
+
     const fetched = {}
     for (const name of names) {
       try {
@@ -452,10 +458,14 @@ export default function PlanView() {
           body: JSON.stringify({ name }),
         })
         const data = await res.json()
-        if (data.gifUrl) fetched[name] = data.gifUrl
+        if (data.gifUrl) {
+          fetched[name] = data.gifUrl
+          // Update state immediately so images appear as they load
+          setImages(prev => ({ ...prev, [name]: data.gifUrl }))
+        }
       } catch {}
     }
-    setImages(fetched)
+    imageLoadingRef.current = false
   }
 
   async function unlock(savedPw) {
