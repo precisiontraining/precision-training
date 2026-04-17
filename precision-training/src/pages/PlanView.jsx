@@ -438,6 +438,37 @@ export default function PlanView() {
     if (saved) unlock(saved)
   }, [slug]) // eslint-disable-line
 
+  // Fetch images sequentially whenever parsedPlan changes — sequential is required to respect Supabase edge function concurrency limits
+  useEffect(() => {
+    if (!parsedPlan?.days) return
+    let cancelled = false
+
+    async function loadImages() {
+      const names = new Set()
+      parsedPlan.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
+      if (!names.size) return
+
+      const fetched = {}
+      for (const name of names) {
+        if (cancelled) return
+        try {
+          const res = await fetch(EXERCISE_GIF_URL, {
+            method: 'POST',
+            headers: { ...HEADERS },
+            body: JSON.stringify({ name }),
+          })
+          const data = await res.json()
+          if (data.gifUrl) fetched[name] = data.gifUrl
+        } catch {}
+      }
+      if (!cancelled) setImages(fetched)
+    }
+
+    setImages({})
+    loadImages()
+    return () => { cancelled = true }
+  }, [parsedPlan]) // eslint-disable-line
+
   async function unlock(savedPw) {
     const pw = savedPw || password
     if (!pw) return
@@ -468,7 +499,6 @@ export default function PlanView() {
       const _isNut = p.plan_type === 'nutrition' || /glp.?1.?nutrition|glp1.?nutrition/i.test(p.plan_type)
       const parsed = _isNut ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
       setParsedPlan(parsed)
-      setTimeout(() => fetchImages(p.html_content, parsed), 100)
       if (!_isNut) setTimeout(() => loadAndAnalyzeProgress(slug, parsed), 800)
 
       // First time setup
@@ -516,31 +546,6 @@ export default function PlanView() {
     } catch {}
   }
 
-  async function fetchImages(html, parsed) {
-    const names = new Set()
-    if (parsed?.days) parsed.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
-    else {
-      const doc = new DOMParser().parseFromString(html, 'text/html')
-      doc.querySelectorAll('table').forEach(table => {
-        const headers = [...table.querySelectorAll('th')].map(h => h.textContent.toLowerCase())
-        if (!headers.some(h => h.includes('set') || h.includes('rep'))) return
-        table.querySelectorAll('tbody tr td:first-child').forEach(cell => {
-          const t = cell.textContent.trim()
-          if (t && t.length > 2 && t.length < 50 && !/^\d/.test(t) && !/^total/i.test(t)) names.add(t.toLowerCase())
-        })
-      })
-    }
-
-    // Fetch all images in parallel — each one updates state as soon as it arrives
-    await Promise.allSettled([...names].map(async name => {
-      try {
-        const res = await fetch(EXERCISE_GIF_URL, { method: 'POST', headers: { ...HEADERS }, body: JSON.stringify({ name }) })
-        const data = await res.json()
-        if (data.gifUrl) setImages(prev => ({ ...prev, [name]: data.gifUrl }))
-      } catch {}
-    }))
-  }
-
   function getImage(name) {
     if (!name) return null
     const lower = name.toLowerCase().trim()
@@ -577,7 +582,6 @@ export default function PlanView() {
     const updated = plan.html_content.replace(new RegExp(swapModal.item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), swapModal.newName)
     await savePlan(updated)
     setSwapModal(null); showToast('Swapped ✓')
-    setTimeout(() => fetchImages(updated, parseTrainingPlan(updated)), 200)
   }
 
   async function applyAdd() {
@@ -586,7 +590,6 @@ export default function PlanView() {
     const dayPattern = new RegExp(`(${addModal.day.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^<]*(?:<[^>]*>)*.*?</table>)`, 'si')
     const updated = plan.html_content.replace(dayPattern, m => m.replace('</table>', newRow + '</table>'))
     await savePlan(updated); setAddModal(null); showToast('Exercise added ✓')
-    setTimeout(() => fetchImages(updated, parseTrainingPlan(updated)), 200)
   }
 
   async function removeItem(name) {
