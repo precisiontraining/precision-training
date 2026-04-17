@@ -438,36 +438,25 @@ export default function PlanView() {
     if (saved) unlock(saved)
   }, [slug]) // eslint-disable-line
 
-  // Fetch images sequentially whenever parsedPlan changes — sequential is required to respect Supabase edge function concurrency limits
-  useEffect(() => {
-    if (!parsedPlan?.days) return
-    let cancelled = false
-
-    async function loadImages() {
-      const names = new Set()
-      parsedPlan.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
-      if (!names.size) return
-
-      const fetched = {}
-      for (const name of names) {
-        if (cancelled) return
-        try {
-          const res = await fetch(EXERCISE_GIF_URL, {
-            method: 'POST',
-            headers: { ...HEADERS },
-            body: JSON.stringify({ name }),
-          })
-          const data = await res.json()
-          if (data.gifUrl) fetched[name] = data.gifUrl
-        } catch {}
-      }
-      if (!cancelled) setImages(fetched)
+  async function loadImages(parsed) {
+    if (!parsed?.days) return
+    const names = new Set()
+    parsed.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
+    if (!names.size) return
+    const fetched = {}
+    for (const name of names) {
+      try {
+        const res = await fetch(EXERCISE_GIF_URL, {
+          method: 'POST',
+          headers: { ...HEADERS },
+          body: JSON.stringify({ name }),
+        })
+        const data = await res.json()
+        if (data.gifUrl) fetched[name] = data.gifUrl
+      } catch {}
     }
-
-    setImages({})
-    loadImages()
-    return () => { cancelled = true }
-  }, [parsedPlan]) // eslint-disable-line
+    setImages(fetched)
+  }
 
   async function unlock(savedPw) {
     const pw = savedPw || password
@@ -499,6 +488,8 @@ export default function PlanView() {
       const _isNut = p.plan_type === 'nutrition' || /glp.?1.?nutrition|glp1.?nutrition/i.test(p.plan_type)
       const parsed = _isNut ? parseNutritionPlan(p.html_content) : parseTrainingPlan(p.html_content)
       setParsedPlan(parsed)
+      if (!_isNut) loadImages(parsed)
+      else loadImages(parsed)
       if (!_isNut) setTimeout(() => loadAndAnalyzeProgress(slug, parsed), 800)
 
       // First time setup
@@ -566,7 +557,9 @@ export default function PlanView() {
     await fetch(`${SUPABASE_URL}/rest/v1/plans?slug=eq.${slug}`, { method: 'PATCH', headers: { ...HEADERS, Prefer: 'return=minimal' }, body: JSON.stringify({ html_content: html }) })
     setPlan(prev => ({ ...prev, html_content: html }))
     const _isNut2 = plan?.plan_type === 'nutrition' || /glp.?1.?nutrition|glp1.?nutrition/i.test(plan?.plan_type)
-    setParsedPlan(_isNut2 ? parseNutritionPlan(html) : parseTrainingPlan(html))
+    const newParsed = _isNut2 ? parseNutritionPlan(html) : parseTrainingPlan(html)
+    setParsedPlan(newParsed)
+    if (!_isNut2) loadImages(newParsed)
   }
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500) }
