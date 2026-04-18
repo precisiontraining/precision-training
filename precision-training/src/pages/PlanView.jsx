@@ -410,7 +410,7 @@ export default function PlanView() {
   const [loading, setLoading] = useState(false)
   const [tab, setTab] = useState('plan')
   const [images, setImages] = useState({})
-  const imageLoadingRef = useRef(false)
+  const imagesLoadedRef = useRef(false)
   const [toast, setToast] = useState('')
   const [swapModal, setSwapModal] = useState(null)
   const [addModal, setAddModal] = useState(null)
@@ -439,16 +439,16 @@ export default function PlanView() {
     if (saved) unlock(saved)
   }, [slug]) // eslint-disable-line
 
-  async function loadImages(parsed) {
-    if (imageLoadingRef.current) return   // prevent double-calls
+  async function loadImages(parsed, force = false) {
+    // Once images are successfully loaded, never reload (unless forced after a swap/add)
+    if (!force && imagesLoadedRef.current) return
     if (!parsed?.days) return
+
     const names = new Set()
     parsed.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
     if (!names.size) return
 
-    imageLoadingRef.current = true
-    setImages({})  // clear stale images before fresh load
-
+    // Sequential fetch — one request at a time, respects Supabase edge function limits
     const fetched = {}
     for (const name of names) {
       try {
@@ -458,14 +458,15 @@ export default function PlanView() {
           body: JSON.stringify({ name }),
         })
         const data = await res.json()
-        if (data.gifUrl) {
-          fetched[name] = data.gifUrl
-          // Update state immediately so images appear as they load
-          setImages(prev => ({ ...prev, [name]: data.gifUrl }))
-        }
+        if (data.gifUrl) fetched[name] = data.gifUrl
       } catch {}
     }
-    imageLoadingRef.current = false
+
+    // Only update state once — with the complete result set, no intermediate clears
+    if (Object.keys(fetched).length > 0) {
+      setImages(fetched)
+      imagesLoadedRef.current = true
+    }
   }
 
   async function unlock(savedPw) {
@@ -569,7 +570,7 @@ export default function PlanView() {
     const _isNut2 = plan?.plan_type === 'nutrition' || /glp.?1.?nutrition|glp1.?nutrition/i.test(plan?.plan_type)
     const newParsed = _isNut2 ? parseNutritionPlan(html) : parseTrainingPlan(html)
     setParsedPlan(newParsed)
-    if (!_isNut2) loadImages(newParsed)
+    if (!_isNut2) { imagesLoadedRef.current = false; loadImages(newParsed, true) }
   }
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500) }
