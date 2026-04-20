@@ -688,7 +688,7 @@ export default function PlanView() {
             ? <NutritionView parsed={parsedPlan} layout={layout} accent={accent} />
             : <TrainingView parsed={parsedPlan} images={images} getImage={getImage} isGlp1={isGlp1} accent={accent} layout={layout} onSwap={openSwap} slug={slug} planHtml={plan?.html_content || ''} onAdd={day => setAddModal({ day, name:'', sets:'3', reps:'8-12', rest:'90s', notes:'' })} onRemove={name => setConfirmRemove(name)} />
         )}
-        {tab === 'tracker' && (isNutrition ? <MacroTracker slug={slug} dailyTargets={getDailyTargets(parsedPlan)} /> : <ProgressTracker slug={slug} exercises={extractExercises()} />)}
+        {tab === 'tracker' && (isNutrition ? <MacroTracker slug={slug} dailyTargets={getDailyTargets(parsedPlan)} /> : <ProgressTracker slug={slug} exercises={extractExercises()} accentColor={accent} />)}
         {tab === 'coach' && <AICoach slug={slug} isNutrition={isNutrition} isGlp1={isGlp1} />}
       </div>
 
