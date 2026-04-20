@@ -15,7 +15,7 @@
 }
 .unitToggle:hover { border-color: var(--gold); }
 
-
+.tracker {
   padding: 32px 0;
   position: relative;
 }
