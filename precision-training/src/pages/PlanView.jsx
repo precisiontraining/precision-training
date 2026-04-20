@@ -817,6 +817,7 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
         </div>
 
         {isGlp1 && (
+          <div style={{ padding:'10px 14px', borderRadius:8, margin:'0 16px 0', background:'rgba(109,184,138,0.06)', border:'1px solid rgba(109,184,138,0.2)', fontSize:11, color:'#6db88a', fontStyle:'italic', lineHeight:1.6 }}>
             Energy low from meds? Drop 1 set per exercise or add 30s extra rest. Do not skip — showing up matters more than perfect reps.
           </div>
         )}
