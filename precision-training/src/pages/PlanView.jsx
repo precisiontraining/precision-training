@@ -7,7 +7,8 @@ import SuggestionPopup from '../components/SuggestionPopup'
 import ExerciseSearchInput from '../components/ExerciseSearchInput'
 import UpgradePrompt from '../components/UpgradePrompt'
 import LayoutChooser from '../components/LayoutChooser'
-import PlanTour, { TRAINING_TOUR_STEPS, NUTRITION_TOUR_STEPS } from '../components/PlanTour'
+import PlanTour, { TRAINING_TOUR_STEPS, NUTRITION_TOUR_STEPS, GLP1_TOUR_STEPS } from '../components/PlanTour'
+import MuscleGuardScore from '../components/MuscleGuardScore'
 import { analyzeProgress, isSuggestionDismissed } from '../utils/analyzeProgress'
 import { canSwap, swapsRemaining, incrementSwap } from '../utils/freeTier'
 import { SUPABASE_URL, SUPABASE_ANON_KEY, EXERCISE_GIF_URL, PLAN_CHAT_URL, DAYS } from '../constants'
@@ -604,7 +605,7 @@ export default function PlanView() {
 
   const isNutrition = plan?.plan_type === 'nutrition' || /glp.?1.?nutrition|glp1.?nutrition/i.test(plan?.plan_type)
   const isGlp1 = /glp.?1|muscle.?guard|muscle.?preservation/i.test(plan?.html_content || '')
-  const tourSteps = isNutrition ? NUTRITION_TOUR_STEPS : TRAINING_TOUR_STEPS
+  const tourSteps = isNutrition ? NUTRITION_TOUR_STEPS : isGlp1 ? GLP1_TOUR_STEPS : TRAINING_TOUR_STEPS
 
   // ── LOCK PAGE ──────────────────────────────────────────────────────────────
   if (!unlocked) return (
@@ -685,7 +686,7 @@ export default function PlanView() {
         {tab === 'plan' && parsedPlan && (
           isNutrition
             ? <NutritionView parsed={parsedPlan} layout={layout} accent={accent} />
-            : <TrainingView parsed={parsedPlan} images={images} getImage={getImage} isGlp1={isGlp1} accent={accent} layout={layout} onSwap={openSwap} onAdd={day => setAddModal({ day, name:'', sets:'3', reps:'8-12', rest:'90s', notes:'' })} onRemove={name => setConfirmRemove(name)} />
+            : <TrainingView parsed={parsedPlan} images={images} getImage={getImage} isGlp1={isGlp1} accent={accent} layout={layout} onSwap={openSwap} slug={slug} planHtml={plan?.html_content || ''} onAdd={day => setAddModal({ day, name:'', sets:'3', reps:'8-12', rest:'90s', notes:'' })} onRemove={name => setConfirmRemove(name)} />
         )}
         {tab === 'tracker' && (isNutrition ? <MacroTracker slug={slug} dailyTargets={getDailyTargets(parsedPlan)} /> : <ProgressTracker slug={slug} exercises={extractExercises()} />)}
         {tab === 'coach' && <AICoach slug={slug} isNutrition={isNutrition} isGlp1={isGlp1} />}
@@ -780,7 +781,7 @@ export default function PlanView() {
 }
 
 // ── TRAINING VIEW ─────────────────────────────────────────────────────────────
-function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp1, accent, layout }) {
+function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp1, accent, layout, slug, planHtml }) {
   const [activeDay, setActiveDay] = useState(0)
   const days = parsed.days || []
   if (!days.length) return <div className={styles.empty}>No workout data found in this plan.</div>
@@ -805,6 +806,10 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
         })}
       </div>
 
+      {isGlp1 && (
+        <MuscleGuardScore slug={slug} planHtml={planHtml} />
+      )}
+
       <div className={styles.dayContent}>
         <div className={styles.dayHeader}>
           <h2 className={styles.dayTitle} style={{ color:accent }}>{day.title}</h2>
@@ -812,7 +817,6 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
         </div>
 
         {isGlp1 && (
-          <div style={{ padding:'10px 14px', borderRadius:8, margin:'0 16px 0', background:'rgba(109,184,138,0.06)', border:'1px solid rgba(109,184,138,0.2)', fontSize:11, color:'#6db88a', fontStyle:'italic', lineHeight:1.6 }}>
             Energy low from meds? Drop 1 set per exercise or add 30s extra rest. Do not skip — showing up matters more than perfect reps.
           </div>
         )}

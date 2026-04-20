@@ -301,6 +301,39 @@ export const TRAINING_TOUR_STEPS = [
   },
 ]
 
+export const GLP1_TOUR_STEPS = [
+  {
+    target: 'tabs',
+    title: 'Your GLP-1 Muscle Guard Plan',
+    text: 'Welcome. This plan is built specifically for people on GLP-1 / Tirzepatide. Every feature here targets the #1 risk: losing muscle while losing weight. Let\'s walk you through it.',
+  },
+  {
+    target: 'muscleguard-score',
+    title: '🛡️ Your MuscleGuard Score',
+    text: 'This is your weekly muscle preservation score (0–100). It pulls your training data, protein intake, and energy levels to tell you exactly how well you\'re protecting your muscle — before it\'s too late to act. The more data you log, the more accurate it becomes.',
+  },
+  {
+    target: 'day-tabs',
+    title: 'Your Training Days',
+    text: 'Each session is designed to maximize muscle stimulus even on low-appetite days. Notice the GLP-1 tip below — it tells you how to adapt if your energy is low from your medication.',
+  },
+  {
+    target: 'exercise-card',
+    title: 'Exercise Cards',
+    text: 'Each exercise shows sets, reps, and rest time. Use ↕ to swap or 🗑 to remove. Compound movements here are non-negotiable for muscle retention on GLP-1.',
+  },
+  {
+    target: 'tracker-tab',
+    title: 'Progress Tracker → feeds your Score',
+    text: 'Log your weights every week. This data directly feeds your MuscleGuard Score under "Training progression." Even one entry per week dramatically improves accuracy.',
+  },
+  {
+    target: 'coach-tab',
+    title: 'AI Coach',
+    text: 'Your coach knows you\'re on GLP-1. Ask it about low-energy training, protein on small appetite, supplement timing, or anything else. It\'s calibrated for your situation.',
+  },
+]
+
 export const NUTRITION_TOUR_STEPS = [
   {
     target: 'tabs',
