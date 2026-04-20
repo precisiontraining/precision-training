@@ -176,7 +176,8 @@ export default function Home() {
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3× Full-Body per week — hits every muscle group 2–3x</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>30–45 min sessions — designed for low-energy days</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Compound-first programming for maximum muscle signal</span></li>
-              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Protein targets: 1.6–2.2 g/kg bodyweight</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span><strong style={{ color: '#6db88a' }}>🛡️ MuscleGuard Score</strong> — weekly 0–100 muscle preservation index</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Syncs with your Nutrition Plan — protein & calories feed your score automatically</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Low-energy day adjustment built into every session</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3 exercise swaps per week (free tier)</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Progress Tracker — log weights, view history</span></li>
@@ -206,6 +207,8 @@ export default function Home() {
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Easy-to-digest food choices — anti-nausea optimized</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Leucine-rich sources to maximize muscle protein synthesis</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Exact portions per meal in grams</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span><strong style={{ color: '#6db88a' }}>🛡️ MuscleGuard Score</strong> — your nutrition data feeds the weekly score</span></li>
+              <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Connects to your Training Plan — one score across both plans</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Adapted to your GLP-1 stage (Starting / Maintenance etc.)</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>Grocery list, meal prep tips, supplement stack</span></li>
               <li><span className={styles.check} style={{ color: '#6db88a' }}>✓</span><span>3 meal swaps per week (free tier)</span></li>

@@ -791,6 +791,11 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
 
   return (
     <div className={styles.trainingView}>
+
+      {isGlp1 && (
+        <MuscleGuardScore slug={slug} planHtml={planHtml} isTrainingPlan={true} />
+      )}
+
       <div className={styles.dayTabs} data-tour="day-tabs">
         {days.map((d, i) => {
           const words = d.title.split(' ')
@@ -805,10 +810,6 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
           )
         })}
       </div>
-
-      {isGlp1 && (
-        <MuscleGuardScore slug={slug} planHtml={planHtml} />
-      )}
 
       <div className={styles.dayContent}>
         <div className={styles.dayHeader}>
