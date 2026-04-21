@@ -844,7 +844,7 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
                 <div key={i} className={styles.exerciseCard} data-tour={i===0 ? 'exercise-card' : undefined}>
                   <div className={styles.exerciseNum} style={{ color:accent }}>{String(i+1).padStart(2,'0')}</div>
                   <div className={styles.exerciseImg}>
-                    {img ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => { e.target.style.display='none' }} /> : <div className={styles.exImgPlaceholder}><ExerciseFallback name={ex.name} /></div>}
+                    {img ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => { e.target.src = FALLBACK_IMAGES[getMuscleGroup(ex.name)] }} /> : <div className={styles.exImgPlaceholder}><ExerciseFallback name={ex.name} /></div>}
                   </div>
                   <div className={styles.exerciseInfo}>
                     <div className={styles.exerciseName}>{ex.name}</div>
@@ -892,7 +892,7 @@ function TrainingView({ parsed, images, getImage, onSwap, onAdd, onRemove, isGlp
               return (
                 <div key={i} className={styles.exerciseCardGrid} data-tour={i===0 ? 'exercise-card' : undefined}>
                   <div className={styles.exerciseImgGrid}>
-                    {img ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => { e.target.style.display='none' }} /> : <ExerciseFallback name={ex.name} />}
+                    {img ? <img src={img} alt={ex.name} className={styles.exImg} onError={e => { e.target.src = FALLBACK_IMAGES[getMuscleGroup(ex.name)] }} /> : <ExerciseFallback name={ex.name} />}
                   </div>
                   <div className={styles.exerciseNameGrid}>{ex.name}</div>
                   {ex.notes && <div className={styles.exerciseNotesGrid}>{ex.notes}</div>}
