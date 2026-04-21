@@ -412,6 +412,7 @@ export default function PlanView() {
   const [tab, setTab] = useState('plan')
   const [images, setImages] = useState({})
   const imagesLoadedRef = useRef(false)
+  const loadGenerationRef = useRef(0)
   const [toast, setToast] = useState('')
   const [swapModal, setSwapModal] = useState(null)
   const [addModal, setAddModal] = useState(null)
@@ -449,9 +450,19 @@ export default function PlanView() {
     parsed.days.forEach(day => day.exercises.forEach(ex => names.add(ex.name.toLowerCase().trim())))
     if (!names.size) return
 
+    // Increment generation so any older in-flight call can detect it is stale
+    // and abort before overwriting state with partial/outdated results.
+    // This fixes the race condition where React Strict Mode double-invokes the
+    // useEffect, or a swap triggers a second loadImages while the first is still
+    // fetching — causing images to flash visible then disappear.
+    const myGeneration = loadGenerationRef.current + 1
+    loadGenerationRef.current = myGeneration
+
     // Sequential fetch — one request at a time, respects Supabase edge function limits
     const fetched = {}
     for (const name of names) {
+      // Abort early if a newer load has been started
+      if (loadGenerationRef.current !== myGeneration) return
       try {
         const res = await fetch(EXERCISE_GIF_URL, {
           method: 'POST',
@@ -463,7 +474,8 @@ export default function PlanView() {
       } catch {}
     }
 
-    // Only update state once — with the complete result set, no intermediate clears
+    // Only commit results if this is still the latest load
+    if (loadGenerationRef.current !== myGeneration) return
     if (Object.keys(fetched).length > 0) {
       setImages(fetched)
       imagesLoadedRef.current = true
@@ -571,7 +583,7 @@ export default function PlanView() {
     const _isNut2 = plan?.plan_type === 'nutrition' || /glp.?1.?nutrition|glp1.?nutrition/i.test(plan?.plan_type)
     const newParsed = _isNut2 ? parseNutritionPlan(html) : parseTrainingPlan(html)
     setParsedPlan(newParsed)
-    if (!_isNut2) { imagesLoadedRef.current = false; loadImages(newParsed, true) }
+    if (!_isNut2) { imagesLoadedRef.current = false; loadGenerationRef.current = 0; loadImages(newParsed, true) }
   }
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 2500) }
