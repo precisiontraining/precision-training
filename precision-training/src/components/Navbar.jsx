@@ -9,6 +9,9 @@ export default function Navbar() {
         <span className={styles.logoWhite}> Training</span>
       </Link>
       <div className={styles.actions}>
+        <Link to="/blog" className={styles.blogLink}>
+          Blog
+        </Link>
         <Link to="/form/glp1" className={styles.btnOutline}>
           💊 GLP-1 Training
         </Link>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import HeroScroll from '../components/HeroScroll'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import ComparisonSection from '../components/ComparisonSection'
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../constants'
 import styles from './Home.module.css'
 
@@ -462,6 +463,9 @@ export default function Home() {
           Generate your free plan now. Premium notified at launch — no commitment.
         </p>
       </section>
+
+      {/* ── COMPARISON ──────────────────────────────────── */}
+      <ComparisonSection />
 
       {/* ── FAQ ───────────────────────────────────────── */}
       <section className={styles.section}>

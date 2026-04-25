@@ -7,10 +7,11 @@ import Privacy from './pages/Privacy'
 import FormTraining from './pages/FormTraining'
 import FormNutrition from './pages/FormNutrition'
 import FormGLP1 from './pages/FormGLP1'
-
 import FormGLP1Nutrition from './pages/FormGLP1Nutrition'
 import Admin from './pages/Admin'
 import Terms from './pages/Terms'
+import Blog from './pages/Blog'
+import BlogPost from './pages/BlogPost'
 
 export default function App() {
   return (
@@ -26,6 +27,8 @@ export default function App() {
         <Route path="/form/glp1" element={<FormGLP1 />} />
         <Route path="/form/glp1-nutrition" element={<FormGLP1Nutrition />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
       </Routes>
       <Analytics />
     </BrowserRouter>

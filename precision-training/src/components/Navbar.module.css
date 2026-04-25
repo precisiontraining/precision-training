@@ -26,6 +26,22 @@
 .actions {
   display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.blogLink {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.blogLink:hover {
+  color: var(--gold);
 }
 
 .btnOutline {
@@ -72,6 +88,7 @@
   .btnOutline { font-size: 10px; padding: 7px 11px; letter-spacing: 0.5px; }
   .btnPrimary { font-size: 10px; padding: 7px 11px; letter-spacing: 0.5px; }
   .actions { gap: 8px; }
+  .blogLink { display: none; }
 }
 
 @media (max-width: 380px) {

@@ -311,7 +311,7 @@ export default function HeroScroll({ trainingPath, nutritionPath, glp1Path, glp1
             display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center',
             padding:'0 16px', opacity:0, willChange:'opacity, transform',
             width:'100%', boxSizing:'border-box',
-          }}>
+          }} className="hero-cta-row">
             <Link to={glp1Path} style={{
               display:'inline-flex', alignItems:'center', gap:6,
               padding:'12px clamp(14px, 4vw, 26px)',
@@ -591,6 +591,15 @@ export default function HeroScroll({ trainingPath, nutritionPath, glp1Path, glp1
 
         /* ───── MOBILE layout ───── */
         @media (max-width: 639px) {
+          .hero-cta-row {
+            bottom: 72px !important;
+            gap: 6px !important;
+          }
+          .hero-cta-row a {
+            font-size: 9px !important;
+            padding: 9px 12px !important;
+            letter-spacing: 0.8px !important;
+          }
           .sf-desktop { display: none; }
           .sf-mobile  {
             display: flex;
