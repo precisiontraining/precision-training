@@ -1,16 +1,20 @@
-import { useMemo } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useMemo, useEffect } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import Navbar from '../components/Navbar'
 import { getPostBySlug, getPublishedPosts } from '../data/blogPosts'
 import styles from './BlogPost.module.css'
 
 export default function BlogPost() {
   const { slug } = useParams()
-  const navigate = useNavigate()
+
+  // Scroll to top on every slug change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [slug])
 
   const post = useMemo(() => {
     const p = getPostBySlug(slug)
-    // Don't show future posts
     if (!p || p.publishedAt > new Date()) return null
     return p
   }, [slug])
@@ -22,9 +26,20 @@ export default function BlogPost() {
       .slice(0, 3)
   }, [post])
 
+  // Sanitize HTML body — strip any injected scripts/event handlers
+  const safeBody = useMemo(() => {
+    if (!post?.body) return ''
+    return DOMPurify.sanitize(post.body, {
+      ALLOWED_TAGS: ['p','h2','h3','h4','ul','ol','li','strong','em','a','blockquote','br','span'],
+      ALLOWED_ATTR: ['href','target','rel','title'],
+      FORCE_HTTPS: true,
+    })
+  }, [post])
+
   if (!post) {
     return (
       <div style={{ background: '#0a0a0a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Navbar />
         <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontFamily: 'Montserrat,sans-serif' }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>404</div>
           <p>Article not found.</p>
@@ -68,17 +83,15 @@ export default function BlogPost() {
             </span>
           </div>
           <h1 className={styles.title}>{post.title}</h1>
-          {post.excerpt && (
-            <p className={styles.excerpt}>{post.excerpt}</p>
-          )}
+          {post.excerpt && <p className={styles.excerpt}>{post.excerpt}</p>}
         </header>
 
         <hr className={styles.divider} />
 
-        {/* Body */}
+        {/* Body — sanitized HTML */}
         <div
           className={styles.body}
-          dangerouslySetInnerHTML={{ __html: post.body }}
+          dangerouslySetInnerHTML={{ __html: safeBody }}
         />
 
         {/* Sources */}
@@ -88,7 +101,12 @@ export default function BlogPost() {
             <ul className={styles.sourcesList}>
               {post.sources.map((src, i) => (
                 <li key={i}>
-                  <a href={src.url} target="_blank" rel="noopener noreferrer" className={styles.sourceLink}>
+                  <a
+                    href={src.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.sourceLink}
+                  >
                     {src.label || src.url}
                   </a>
                 </li>

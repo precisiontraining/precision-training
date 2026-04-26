@@ -1,32 +1,31 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 
 const GOLD  = '#c8a96e'
 const GREEN = '#6db88a'
 
-// Real competitors that also offer GLP-1/fitness/nutrition plans
 const COMPETITORS = [
-  { key: 'future',     name: 'Future',       icon: '📱', desc: 'AI coaching app, $150/mo' },
-  { key: 'noom',       name: 'Noom',         icon: '🥗', desc: 'Psychology-based weight loss' },
-  { key: 'calibrate',  name: 'Calibrate',    icon: '💊', desc: 'GLP-1 program with coaching' },
-  { key: 'mfp',        name: 'MyFitnessPal', icon: '📊', desc: 'Calorie & macro tracker' },
+  { key: 'future',    name: 'Future',       icon: '📱', desc: 'AI coaching app, $150/mo' },
+  { key: 'noom',      name: 'Noom',         icon: '🥗', desc: 'Psychology-based weight loss' },
+  { key: 'calibrate', name: 'Calibrate',    icon: '💊', desc: 'GLP-1 program with coaching' },
+  { key: 'mfp',       name: 'MyFitnessPal', icon: '📊', desc: 'Calorie & macro tracker' },
 ]
 
 const FEATURES = [
   {
     label: 'Personalized training plan',
     pt: true, future: true, noom: false, calibrate: '⚠️', mfp: false,
-    note: 'Calibrate focuses on medication + lifestyle, limited structured training',
+    note: 'Calibrate focuses on medication + lifestyle coaching — no structured resistance training program.',
   },
   {
     label: 'GLP-1 muscle preservation mode',
     pt: true, future: false, noom: false, calibrate: '⚠️', mfp: false,
-    note: 'Calibrate acknowledges muscle loss risk but has no specific resistance program',
+    note: 'Calibrate acknowledges muscle loss risk but provides no dedicated resistance program for it.',
   },
   {
     label: 'Personalized nutrition plan',
     pt: true, future: false, noom: true, calibrate: true, mfp: false,
-    note: 'MFP tracks but does not generate plans',
+    note: 'MyFitnessPal tracks calories but does not generate personalized plans.',
   },
   {
     label: 'Plan ready in under 5 minutes',
@@ -39,16 +38,17 @@ const FEATURES = [
   {
     label: 'AI coach chat',
     pt: true, future: true, noom: '⚠️', calibrate: '⚠️', mfp: false,
-    note: 'Noom and Calibrate offer human coaching, not real-time AI',
+    note: 'Noom and Calibrate offer human coaching — not real-time AI available on demand.',
   },
   {
     label: 'Free to start — no subscription',
     pt: true, future: false, noom: false, calibrate: false, mfp: '⚠️',
-    note: 'MFP free tier exists but plan features require Premium',
+    note: 'MyFitnessPal has a free tier but plan features require Premium ($19.99/mo).',
   },
   {
     label: 'Exercise swap & customization',
     pt: true, future: '⚠️', noom: false, calibrate: false, mfp: false,
+    note: 'Future allows some exercise feedback via your coach but no self-service swap system.',
   },
   {
     label: 'Built specifically for GLP-1 users',
@@ -67,15 +67,48 @@ function Cell({ val }) {
 }
 
 export default function ComparisonSection() {
-  const [activeNote, setActiveNote] = useState(null)
+  // Tooltip state: { text, x, y } | null
+  const [tooltip, setTooltip] = useState(null)
+
+  const handleMouseMove = useCallback((e, note) => {
+    if (!note) return
+    setTooltip({ text: note, x: e.clientX, y: e.clientY })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setTooltip(null)
+  }, [])
 
   return (
     <section style={{
-      padding: '100px 40px',
+      padding: 'clamp(60px, 8vw, 100px) clamp(16px, 4vw, 40px)',
       maxWidth: 1100,
       margin: '0 auto',
       fontFamily: 'Montserrat, sans-serif',
     }}>
+      {/* Global cursor-following tooltip */}
+      {tooltip && (
+        <div style={{
+          position: 'fixed',
+          left: tooltip.x + 14,
+          top: tooltip.y - 8,
+          zIndex: 9999,
+          pointerEvents: 'none',
+          background: '#1c1c1c',
+          border: '1px solid rgba(200,169,110,0.25)',
+          borderRadius: 8,
+          padding: '8px 12px',
+          fontSize: 11,
+          color: 'rgba(255,255,255,0.7)',
+          maxWidth: 220,
+          lineHeight: 1.5,
+          boxShadow: '0 6px 24px rgba(0,0,0,0.6)',
+          whiteSpace: 'normal',
+        }}>
+          {tooltip.text}
+        </div>
+      )}
+
       {/* Header */}
       <p style={{
         textAlign: 'center', fontSize: 11, fontWeight: 800,
@@ -143,8 +176,7 @@ export default function ComparisonSection() {
                 color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
                 borderBottom: '1px solid rgba(255,255,255,0.07)', minWidth: 200,
               }}>Feature</th>
-
-              {/* PT — highlighted column */}
+              {/* PT highlighted */}
               <th style={{
                 textAlign: 'center', padding: '18px 16px',
                 background: 'rgba(200,169,110,0.07)',
@@ -158,7 +190,6 @@ export default function ComparisonSection() {
                 </div>
                 <div style={{ fontSize: 9, color: 'rgba(200,169,110,0.4)', marginTop: 4 }}>★ This</div>
               </th>
-
               {COMPETITORS.map(c => (
                 <th key={c.key} style={{
                   textAlign: 'center', padding: '18px 16px',
@@ -176,29 +207,31 @@ export default function ComparisonSection() {
             {FEATURES.map((f, i) => (
               <tr
                 key={f.label}
-                style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)', cursor: f.note ? 'help' : 'default' }}
-                onMouseEnter={() => f.note && setActiveNote(i)}
-                onMouseLeave={() => setActiveNote(null)}
+                style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)' }}
               >
                 <td style={{
                   padding: '13px 24px',
                   fontSize: 12,
                   color: 'rgba(255,255,255,0.55)',
                   borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  lineHeight: 1.4, position: 'relative',
+                  lineHeight: 1.4,
+                  userSelect: 'none',
                 }}>
-                  <span>{f.label}</span>
+                  {f.label}
                   {f.note && (
-                    <span style={{ marginLeft: 6, fontSize: 9, color: 'rgba(200,169,110,0.4)', cursor: 'help' }} title={f.note}>ⓘ</span>
-                  )}
-                  {activeNote === i && f.note && (
-                    <div style={{
-                      position: 'absolute', bottom: '110%', left: 0, zIndex: 10,
-                      background: '#1a1a1a', border: '1px solid rgba(200,169,110,0.2)',
-                      borderRadius: 8, padding: '8px 12px', fontSize: 10,
-                      color: 'rgba(255,255,255,0.6)', maxWidth: 260, lineHeight: 1.5,
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.5)', whiteSpace: 'normal',
-                    }}>{f.note}</div>
+                    <span
+                      style={{
+                        marginLeft: 6,
+                        fontSize: 10,
+                        color: 'rgba(200,169,110,0.5)',
+                        cursor: 'help',
+                        display: 'inline-block',
+                      }}
+                      onMouseMove={e => handleMouseMove(e, f.note)}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      ⓘ
+                    </span>
                   )}
                 </td>
 
@@ -211,10 +244,10 @@ export default function ComparisonSection() {
                   borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(200,169,110,0.05)' : 'none',
                 }}><Cell val={f.pt} /></td>
 
-                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.future} /></td>
-                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.noom} /></td>
-                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.calibrate} /></td>
-                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.mfp} /></td>
+                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length-1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.future} /></td>
+                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length-1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.noom} /></td>
+                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length-1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.calibrate} /></td>
+                <td style={{ textAlign:'center', padding:'13px 16px', borderBottom: i < FEATURES.length-1 ? '1px solid rgba(255,255,255,0.04)':'none' }}><Cell val={f.mfp} /></td>
               </tr>
             ))}
           </tbody>
@@ -228,7 +261,7 @@ export default function ComparisonSection() {
         ✓ = Yes &nbsp;·&nbsp; ✕ = No &nbsp;·&nbsp; ⚠️ = Partially / limited &nbsp;·&nbsp; Hover ⓘ for details
       </p>
 
-      {/* Bottom stat boxes */}
+      {/* Stat boxes */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -236,10 +269,10 @@ export default function ComparisonSection() {
         marginTop: 52,
       }}>
         {[
-          { icon: '💸', stat: '$0', label: 'No subscription needed to get your plan' },
+          { icon: '💸', stat: '$0',      label: 'No subscription needed to get your plan' },
           { icon: '⚡', stat: '< 2 min', label: 'Full personalized plan, instantly' },
-          { icon: '🧬', stat: 'GLP-1', label: 'Only platform purpose-built for Ozempic & Wegovy users' },
-          { icon: '🤖', stat: 'AI Coach', label: 'Knows your exact plan — not a generic chatbot' },
+          { icon: '🧬', stat: 'GLP-1',   label: 'Only platform purpose-built for Ozempic & Wegovy users' },
+          { icon: '🤖', stat: 'AI Coach',label: 'Knows your exact plan — not a generic chatbot' },
         ].map(item => (
           <div key={item.stat} style={{
             padding: '24px 22px',
@@ -249,7 +282,7 @@ export default function ComparisonSection() {
             textAlign: 'center',
           }}>
             <div style={{ fontSize: 26, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: GOLD, letterSpacing: '-0.02em', marginBottom: 6 }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: GOLD, letterSpacing: '-0.02em', marginBottom: 6 }}>
               {item.stat}
             </div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', lineHeight: 1.5 }}>{item.label}</div>
@@ -258,7 +291,7 @@ export default function ComparisonSection() {
       </div>
 
       {/* CTA */}
-      <div style={{ textAlign: 'center', marginTop: 52 }}>
+      <div style={{ textAlign: 'center', marginTop: 52, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to="/form/glp1" style={{
           display: 'inline-block',
           padding: '14px 32px',
@@ -272,7 +305,6 @@ export default function ComparisonSection() {
           textDecoration: 'none',
           textTransform: 'uppercase',
           boxShadow: '0 8px 24px rgba(100,180,130,0.3)',
-          marginRight: 12,
         }}>
           💊 GLP-1 Plan — Free →
         </Link>

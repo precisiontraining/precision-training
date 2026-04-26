@@ -398,9 +398,20 @@
 }
 
 @media (max-width: 640px) {
-  .article { padding: 100px 20px 48px; }
+  .article { padding: 90px 18px 48px; }
+  .title { font-size: 22px; }
+  .excerpt { font-size: 14px; }
+  .body { font-size: 14px; }
+  .body h2 { font-size: 18px; }
+  .body h3 { font-size: 15px; }
   .related { padding: 0 16px 60px; }
   .relatedGrid { grid-template-columns: 1fr; }
-  .ctaInner { padding: 24px 20px; }
+  .ctaInner { padding: 22px 18px; }
+  .ctaTitle { font-size: 18px; }
+  .ctaBtns { flex-direction: column; }
+  .btnPrimary, .btnSecondary { text-align: center; }
   .footer { padding: 32px 20px; }
+  .footerLinks { gap: 16px; flex-wrap: wrap; }
+  .breadcrumb { font-size: 10px; }
+  .sources { padding: 18px 16px; }
 }

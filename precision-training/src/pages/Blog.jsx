@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { getPublishedPosts } from '../data/blogPosts'
@@ -11,6 +11,11 @@ export default function Blog() {
   const [search, setSearch] = useState('')
 
   const allPosts = useMemo(() => getPublishedPosts(), [])
+
+  // Always start at top when navigating to blog list
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [])
 
   const filtered = useMemo(() => allPosts.filter(p => {
     const matchCat = category === 'All' || p.category === category

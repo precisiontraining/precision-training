@@ -1,3 +1,4 @@
+/* ── Base nav ─────────────────────────────────────────────────── */
 .nav {
   position: fixed;
   top: 0;
@@ -10,46 +11,67 @@
   padding: 16px 40px;
   background: rgba(10, 10, 10, 0.92);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(200, 169, 110, 0.1);
 }
 
+/* ── Logo ─────────────────────────────────────────────────────── */
 .logo {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
   text-decoration: none;
+  flex-shrink: 0;
 }
-
-.logoGold { color: var(--gold); }
+.logoGold  { color: var(--gold); }
 .logoWhite { color: var(--white); }
 
-.actions {
+/* ── Center nav links (desktop) ───────────────────────────────── */
+.centerLinks {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 28px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.blogLink {
-  font-size: 12px;
-  font-weight: 700;
+.navLink {
+  font-size: 13px;
+  font-weight: 600;
   font-family: var(--font);
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.45);
   text-decoration: none;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   transition: color 0.2s;
   white-space: nowrap;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
 }
 
-.blogLink:hover {
-  color: var(--gold);
+.navLink:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.navLinkActive {
+  color: var(--gold) !important;
+  border-bottom-color: var(--gold);
+}
+
+/* ── Right CTA buttons (desktop) ─────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .btnOutline {
-  padding: 9px 18px;
+  padding: 8px 16px;
   border: 1px solid var(--gold);
   color: var(--gold);
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   font-family: var(--font);
   cursor: pointer;
@@ -57,18 +79,17 @@
   text-decoration: none;
   white-space: nowrap;
 }
-
 .btnOutline:hover {
   background: var(--gold);
   color: #000;
 }
 
 .btnPrimary {
-  padding: 9px 18px;
+  padding: 8px 16px;
   border: 1px solid #6db88a;
   color: #6db88a;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   font-family: var(--font);
   cursor: pointer;
@@ -76,21 +97,105 @@
   text-decoration: none;
   white-space: nowrap;
 }
-
 .btnPrimary:hover {
   background: #6db88a;
   color: #000;
 }
 
-@media (max-width: 640px) {
-  .nav { padding: 12px 16px; }
-  .logo { font-size: 15px; }
-  .btnOutline { font-size: 10px; padding: 7px 11px; letter-spacing: 0.5px; }
-  .btnPrimary { font-size: 10px; padding: 7px 11px; letter-spacing: 0.5px; }
-  .actions { gap: 8px; }
-  .blogLink { display: none; }
+/* ── Hamburger (mobile only) ──────────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
 }
 
-@media (max-width: 380px) {
-  .btnOutline, .btnPrimary { padding: 6px 9px; font-size: 9px; }
+.bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+  transform-origin: center;
+}
+
+.barOpen1 { transform: translateY(7px) rotate(45deg); }
+.barOpen2 { opacity: 0; transform: scaleX(0); }
+.barOpen3 { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Mobile dropdown ──────────────────────────────────────────── */
+.mobileMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(200, 169, 110, 0.12);
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 99;
+}
+
+.mobileLink {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: var(--font);
+  transition: color 0.2s;
+}
+.mobileLink:hover { color: var(--gold); }
+
+.mobileBtnOutline {
+  padding: 12px 20px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+}
+.mobileBtnOutline:hover { background: var(--gold); color: #000; }
+
+.mobileBtnPrimary {
+  padding: 12px 20px;
+  border: 1px solid #6db88a;
+  color: #6db88a;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+}
+.mobileBtnPrimary:hover { background: #6db88a; color: #000; }
+
+/* ── Mobile breakpoints ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .centerLinks { display: none; }
+  .actions     { display: none; }
+  .hamburger   { display: flex; }
+  .nav         { padding: 14px 20px; }
+}
+
+@media (max-width: 400px) {
+  .logo { font-size: 16px; }
 }
