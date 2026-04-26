@@ -74,11 +74,7 @@ function BroadcastModal({ selectedEmails, onClose }) {
     }
   }
 
-  const inp = { width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontFamily: 'Montserrat, sans-serif', fontSize: 13, outline: 'none', boxSizing: 'border-box' }
-  const inpFocusStyle = `
-    .pt-input::placeholder { color: rgba(255,255,255,0.2); font-style: italic; }
-    .pt-input:focus { border-color: rgba(200,169,110,0.4) !important; background: rgba(255,255,255,0.08) !important; }
-  `
+  const inp = { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontFamily: 'Montserrat, sans-serif', fontSize: 13, outline: 'none', boxSizing: 'border-box' }
 
   return (
     <div onClick={e => e.target === e.currentTarget && onClose()} style={{
@@ -86,17 +82,13 @@ function BroadcastModal({ selectedEmails, onClose }) {
       background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>
-      <style>{`
-        .pt-modal-input::placeholder { color: rgba(255,255,255,0.2); font-style: italic; }
-        .pt-modal-input:focus { border-color: rgba(200,169,110,0.5) !important; background: rgba(255,255,255,0.09) !important; outline: none; }
-      `}</style>
       <div style={{ width: '100%', maxWidth: 540, background: '#111', border: '1px solid rgba(200,169,110,0.2)', borderRadius: 20, padding: 32, fontFamily: 'Montserrat, sans-serif' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 3 }}>📨 Broadcast Email</div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{unique.length} recipient{unique.length !== 1 ? 's' : ''}</div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 22, cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 22, cursor: 'pointer', padding: 0, lineHeight: 1 }}>×</button>
         </div>
 
         {/* Recipients preview */}
@@ -109,34 +101,23 @@ function BroadcastModal({ selectedEmails, onClose }) {
 
         {/* From (readonly) */}
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 5 }}>From <span style={{ color: 'rgba(255,255,255,0.12)', fontWeight: 400, letterSpacing: 0 }}>(fixed)</span></div>
-          <div style={{ ...inp, color: 'rgba(255,255,255,0.3)', cursor: 'default', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', fontStyle: 'italic' }}>info@precision-training.io · Precision Training</div>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 5 }}>From</div>
+          <div style={{ ...inp, color: 'rgba(255,255,255,0.35)', cursor: 'default' }}>info@precision-training.io · Precision Training</div>
         </div>
 
         {/* Subject */}
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(200,169,110,0.7)', marginBottom: 5 }}>Subject ✏️</div>
-          <input
-            className="pt-modal-input"
-            value={subject}
-            onChange={e => setSubject(e.target.value)}
-            placeholder="z.B. Dein Plan wartet auf dich 🎯"
-            style={{ ...inp, border: '1px solid rgba(200,169,110,0.25)' }}
-          />
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 5 }}>Subject</div>
+          <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Your plan is ready 🎯" style={inp} />
         </div>
 
         {/* Message */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(200,169,110,0.7)', marginBottom: 5 }}>Message ✏️</div>
-          <textarea
-            className="pt-modal-input"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            rows={7}
-            placeholder={'Hi,\n\nSchreib hier deine Nachricht...\n\n— Flo, Precision Training'}
-            style={{ ...inp, resize: 'vertical', lineHeight: 1.7, border: '1px solid rgba(200,169,110,0.25)' }}
-          />
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 5 }}>✍️ Klick ins Feld und schreib deinen Text — plain text, persönlich.</div>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 5 }}>Message</div>
+          <textarea value={message} onChange={e => setMessage(e.target.value)} rows={7}
+            placeholder={'Hi,\n\nI wanted to personally reach out…\n\n— Flo, Precision Training'}
+            style={{ ...inp, resize: 'vertical', lineHeight: 1.7 }} />
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.18)', marginTop: 4 }}>Plain text email — simple and personal.</div>
         </div>
 
         {status === 'done' && (
@@ -304,7 +285,6 @@ export default function Admin() {
     body: { maxWidth: 1240, margin: '0 auto', padding: '32px 24px' },
     label: { fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 10 },
     btn: (c = gold) => ({ padding: '9px 16px', borderRadius: 8, background: `${c}15`, border: `1px solid ${c}28`, color: c, fontFamily: 'Montserrat, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: 1, cursor: 'pointer' }),
-    btnMuted: { padding: '9px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.55)', fontFamily: 'Montserrat, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: 1, cursor: 'pointer' },
     inp: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', color: '#fff', fontFamily: 'Montserrat, sans-serif', fontSize: 13, outline: 'none' },
     th: { padding: '9px 12px', textAlign: 'left', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', borderBottom: '1px solid rgba(255,255,255,0.05)' },
     td: { padding: '11px 12px', fontSize: 12, color: 'rgba(255,255,255,0.6)', borderBottom: '1px solid rgba(255,255,255,0.04)', verticalAlign: 'middle' },
@@ -397,7 +377,7 @@ export default function Admin() {
             <option value="oldest">Oldest first</option>
           </select>
           <button style={base.btn(gold)} onClick={exportCSV}>⬇ CSV</button>
-          <button style={base.btnMuted} onClick={loadPlans}>↺ Refresh</button>
+          <button style={base.btn('rgba(255,255,255,0.3)')} onClick={loadPlans}>↺ Refresh</button>
         </div>
 
         {/* Selection bar */}
@@ -408,7 +388,7 @@ export default function Admin() {
           </div>
           {selected.size > 0 && (
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setSelected(new Set())} style={{ ...base.btnMuted, padding: '7px 12px' }}>Clear</button>
+              <button onClick={() => setSelected(new Set())} style={{ ...base.btn('rgba(255,255,255,0.3)'), padding: '7px 12px' }}>Clear</button>
               <button onClick={() => setShowBroadcast(true)} style={{ ...base.btn(gold), padding: '7px 16px', background: 'linear-gradient(135deg,rgba(184,146,46,0.18),rgba(200,169,110,0.18))' }}>
                 📨 Send Email to {selected.size}
               </button>
